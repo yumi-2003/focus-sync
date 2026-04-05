@@ -2,17 +2,17 @@
 
 Focus Sync is currently a split frontend/backend starter for a focus-tracking app.
 The backend already has authentication routes and MongoDB models, while the frontend
-already has React Contexts for auth, sessions, and timer state. The main thing to know
-right now is that the client UI is still the default Vite starter, so the contexts exist
-but are not yet used by the visible screen.
+already has React Contexts for auth, sessions, and timer state. The client now includes
+a working login/register screen wired to the backend auth routes, while session tracking
+and timer UI are the next features to build.
 
 ## Current Context Review
 
 ### `AuthContext`
 - Purpose: keeps the logged-in user in client memory.
-- API: `user`, `login(userData)`, `logout()`.
+- API: `user`, `token`, `login(userData, token)`, `logout()`.
 - Good for: showing the current user, gating screens, and storing the user returned by login.
-- Limitation: it is memory-only right now, so refresh clears it unless you later add local storage.
+- Current behavior: it also persists to local storage, so refresh keeps the signed-in state.
 
 ### `SessionContext`
 - Purpose: stores the current or latest session object in client memory.
@@ -33,7 +33,7 @@ client/
   src/
     context/      React Context providers and hooks
     types/        Shared client-side TypeScript types
-    App.tsx       Still the default Vite starter screen
+    App.tsx       Login/register screen and signed-in summary
 server/
   src/
     app.ts        Express server entry point
@@ -50,11 +50,10 @@ Base path: `/api/auth`
   - body: `{ "email": "you@example.com", "password": "secret" }`
 - `POST /login`
   - body: `{ "email": "you@example.com", "password": "secret" }`
-  - response: `{ "token": "..." }`
+  - response: `{ "token": "...", "user": { "_id": "...", "email": "..." } }`
 
 Important note:
-- Registration currently returns the created user document directly.
-- Login returns only a JWT token, not the full user object.
+- Register and login now both return the same auth payload shape.
 - No protected middleware or session CRUD routes are implemented yet.
 
 ## How To Run It
@@ -96,16 +95,29 @@ Example auth usage:
 import { useAuth } from "./context/AuthContext";
 
 function ProfileBadge() {
-  const { user, login, logout } = useAuth();
+  const { user, token, login, logout } = useAuth();
 
   return user ? (
     <button onClick={logout}>{user.email}</button>
   ) : (
-    <button onClick={() => login({ _id: "1", email: "demo@focussync.dev" })}>
+    <button
+      onClick={() =>
+        login(
+          { _id: "1", email: "demo@focussync.dev" },
+          "demo-token",
+        )
+      }
+    >
       Sign in demo
     </button>
   );
 }
+```
+
+If the client needs a different backend URL, create `client/.env` with:
+
+```env
+VITE_API_URL=http://localhost:5000/api
 ```
 
 Example timer usage:
@@ -132,8 +144,7 @@ function TimerControls() {
 
 If you want to turn this into a working app, the clean next steps are:
 
-1. Replace the Vite starter UI in `client/src/App.tsx` with real auth and timer screens.
-2. Add a client API service layer for `/api/auth/register` and `/api/auth/login`.
-3. Save the JWT token on the client and restore user state on refresh.
-4. Add session routes on the server for creating and reading focus sessions.
-5. Connect `SessionContext` to those server routes instead of keeping session data only in memory.
+1. Replace the signed-in summary in `client/src/App.tsx` with a real timer dashboard.
+2. Add session routes on the server for creating and reading focus sessions.
+3. Connect `SessionContext` to those server routes instead of keeping session data only in memory.
+4. Attach the JWT token to protected API requests once you add authenticated routes.

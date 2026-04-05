@@ -1,121 +1,172 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { type ChangeEvent, type FormEvent, useState } from "react";
+import "./App.css";
+import { useAuth } from "./context/AuthContext";
+import { loginUser, registerUser } from "./services/auth";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
 
-function App() {
-  const [count, setCount] = useState(0)
+type AuthMode = "login" | "register";
 
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+interface FormState {
+  email: string;
+  password: string;
+  confirmPassword: string;
 }
 
-export default App
+const initialFormState: FormState = {
+  email: "",
+  password: "",
+  confirmPassword: "",
+};
+
+function App() {
+  const { user, token, login, logout } = useAuth();
+  const [mode, setMode] = useState<AuthMode>("login");
+  const [form, setForm] = useState<FormState>(initialFormState);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+    setForm((current) => ({ ...current, [name]: value }));
+  };
+
+  const handleModeChange = (nextMode: AuthMode) => {
+    setMode(nextMode);
+    setError("");
+    setSuccess("");
+  };
+
+  const handleClear = () => {
+    setForm(initialFormState);
+    setError("");
+    setSuccess("");
+  };
+
+  const handleLoginSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError("");
+    setSuccess("");
+    setIsSubmitting(true);
+
+    try {
+      const authResponse = await loginUser({
+        email: form.email,
+        password: form.password,
+      });
+
+      login(authResponse.user, authResponse.token);
+      setForm(initialFormState);
+      setSuccess("Signed in successfully.");
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : "Something went wrong. Please try again.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleRegisterSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError("");
+    setSuccess("");
+
+    if (form.password !== form.confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      //call register API and log in on success
+      const authResponse = await registerUser({
+        email: form.email,
+        password: form.password,
+      });
+
+      // Automatically log in the user after successful registration
+      login(authResponse.user, authResponse.token);
+      setForm(initialFormState);
+      setSuccess("Account created and signed in.");
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : "Something went wrong. Please try again.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (user) {
+    return (
+      <main className="app-shell">
+        <section className="auth-layout auth-layout--compact">
+          <section className="auth-panel">
+            <div className="auth-header">
+              <span className="auth-kicker">Focus Sync</span>
+              <h1>Signed in</h1>
+              <p>{user.email}</p>
+            </div>
+
+            {success ? <div className="message success">{success}</div> : null}
+
+            <div className="dashboard-meta">
+              <div className="dashboard-card">
+                <strong>Email</strong>
+                <span>{user.email}</span>
+              </div>
+
+              <div className="dashboard-card">
+                <strong>Session</strong>
+                <span>{token ? "Active" : "Unavailable"}</span>
+              </div>
+            </div>
+
+            <div className="button-row">
+              <button className="ghost-button" type="button" onClick={logout}>
+                Log out
+              </button>
+            </div>
+          </section>
+        </section>
+      </main>
+    );
+  }
+
+  if (mode === "register") {
+    return (
+      <RegisterPage
+        form={form}
+        error={error}
+        success={success}
+        isSubmitting={isSubmitting}
+        onChange={handleChange}
+        onSubmit={handleRegisterSubmit}
+        onClear={handleClear}
+        onSwitchToLogin={() => handleModeChange("login")}
+      />
+    );
+  }
+
+  return (
+    <LoginPage
+      form={form}
+      error={error}
+      success={success}
+      isSubmitting={isSubmitting}
+      onChange={handleChange}
+      onSubmit={handleLoginSubmit}
+      onClear={handleClear}
+      onSwitchToRegister={() => handleModeChange("register")}
+    />
+  );
+}
+
+export default App;
