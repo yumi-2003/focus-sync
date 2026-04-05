@@ -1,5 +1,4 @@
-//create timer context provider for timer
-import React, { createContext, useState } from "react";
+import React, { createContext, useContext, useState } from "react";
 
 interface TimerContextType {
   isRunning: boolean;
@@ -10,14 +9,9 @@ interface TimerContextType {
   resetTimer: () => void;
 }
 
-export const TimerContext = createContext<TimerContextType>({
-  isRunning: false,
-  startTime: null,
-  elapsedTime: 0,
-  startTimer: () => {},
-  stopTimer: () => {},
-  resetTimer: () => {},
-});
+export const TimerContext = createContext<TimerContextType | undefined>(
+  undefined,
+);
 
 export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -48,7 +42,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   return (
-    <TimerContext
+    <TimerContext.Provider
       value={{
         isRunning,
         startTime,
@@ -59,6 +53,16 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({
       }}
     >
       {children}
-    </TimerContext>
+    </TimerContext.Provider>
   );
+};
+
+export const useTimer = () => {
+  const context = useContext(TimerContext);
+
+  if (!context) {
+    throw new Error("useTimer must be used within a TimerProvider");
+  }
+
+  return context;
 };
