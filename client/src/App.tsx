@@ -6,6 +6,7 @@ import { useSession } from "./context/SessionContext";
 import { loginUser, registerUser } from "./services/auth";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import { type Mood } from "./types";
 
 type AuthMode = "login" | "register";
 
@@ -22,45 +23,46 @@ const initialFormState: FormState = {
 };
 
 function App() {
-  const { user, token, login, logout } = useAuth();
+  const { user, login, logout } = useAuth();
   
-  // Step 1: Connect to new Contexts for State Management
-  // By destructuring from useTimer and useSession, the component subscribes
-  // to their real-time state and action modifiers.
   const { isRunning, startTime, elapsedTime, startTimer, stopTimer, resetTimer } = useTimer();
-  const { session } = useSession();
+  const { session, endSession } = useSession();
   const [mode, setMode] = useState<AuthMode>("login");
   const [form, setForm] = useState<FormState>(initialFormState);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Step 2: Live-display state logic
-  // We manage `displayTime` locally because updating Context every millisecond 
-  // would cause the entire component tree to re-evaluate too frequently.
-  const [displayTime, setDisplayTime] = useState(elapsedTime);
+  // Set default starting time to 30:00 for the lofi timer aesthetic
+  const thirtyMinutesMs = 30 * 60 * 1000;
+  const [displayTime, setDisplayTime] = useState(thirtyMinutesMs);
+
+  // Mood tracking UI state
+  const [showEndModal, setShowEndModal] = useState(false);
+  const [moodBefore, setMoodBefore] = useState<Mood>("neutral");
+  const [moodAfter, setMoodAfter] = useState<Mood>("focused");
+  const [focusLevel, setFocusLevel] = useState<number>(5);
+  const [distractions, setDistractions] = useState("");
 
   useEffect(() => {
     let interval: number;
-    // When isRunning is true, continuously update the local state to tick visually
     if (isRunning && startTime) {
       interval = window.setInterval(() => {
         const now = new Date();
         const diff = now.getTime() - startTime.getTime();
-        setDisplayTime(elapsedTime + diff);
+        // Countdown logic:
+        const remaining = Math.max(0, thirtyMinutesMs - (elapsedTime + diff));
+        setDisplayTime(remaining);
       }, 100);
     } else {
-      // When paused, perfectly sync back up to the stored context elapsedTime
-      setDisplayTime(elapsedTime);
+      const remaining = Math.max(0, thirtyMinutesMs - elapsedTime);
+      setDisplayTime(remaining);
     }
-    // Cleanup interval to prevent memory leaks
     return () => window.clearInterval(interval);
   }, [isRunning, startTime, elapsedTime]);
 
-  // Step 3: Format helper
-  // Converts integer milliseconds into standard standard clock view MM:SS
   const formatTime = (ms: number) => {
-    const totalSeconds = Math.floor(ms / 1000);
+    const totalSeconds = Math.ceil(ms / 1000);
     const m = Math.floor(totalSeconds / 60).toString().padStart(2, "0");
     const s = (totalSeconds % 60).toString().padStart(2, "0");
     return `${m}:${s}`;
@@ -122,13 +124,11 @@ function App() {
     setIsSubmitting(true);
 
     try {
-      //call register API and log in on success
       const authResponse = await registerUser({
         email: form.email,
         password: form.password,
       });
 
-      // Automatically log in the user after successful registration
       login(authResponse.user, authResponse.token);
       setForm(initialFormState);
       setSuccess("Account created and signed in.");
@@ -143,97 +143,145 @@ function App() {
     }
   };
 
+  const handleTimerClick = () => {
+    if (isRunning) {
+      stopTimer();
+      setShowEndModal(true);
+    } else {
+      startTimer();
+    }
+  };
+
+  const handleSaveSession = () => {
+    if (user && startTime) {
+      endSession({
+        user,
+        startTime: startTime.toISOString(),
+        endTime: new Date().toISOString(),
+        moodBefore,
+        moodAfter,
+        focusLevel,
+        distractions
+      });
+    }
+    setShowEndModal(false);
+    resetTimer();
+    setMoodBefore("neutral");
+    setMoodAfter("focused");
+    setFocusLevel(5);
+    setDistractions("");
+  };
+
+  const handleDiscardSession = () => {
+    setShowEndModal(false);
+    resetTimer();
+  };
+
   if (user) {
     return (
       <main className="app-shell">
-        <section className="auth-layout auth-layout--compact">
-          <section className="auth-panel">
-            <div className="auth-header">
-              <span className="auth-kicker">Focus Sync</span>
-              <h1>Signed in</h1>
-              <p>{user.email}</p>
-            </div>
+        <section className="main-content">
+          <div className="app-header">
+            <h1>LOFI TIMER</h1>
+          </div>
+          
+          <div className="timer-display" onClick={handleTimerClick} title={isRunning ? "Click to stop" : "Click to start"}>
+             <h2>{formatTime(displayTime)}</h2>
+          </div>
 
-            {success ? <div className="message success">{success}</div> : null}
-
-            <div className="dashboard-meta">
-              <div className="dashboard-card">
-                <strong>Email</strong>
-                <span>{user.email}</span>
-              </div>
-
-              <div className="dashboard-card">
-                <strong>Auth Token</strong>
-                <span>{token ? "Active" : "Unavailable"}</span>
-              </div>
-
-              {/* Step 4: Timer UI Integration */}
-              {/* Connects the useTimer actions to UI buttons, dynamically displaying formatTime */}
-              <div className="dashboard-card" style={{ gridColumn: '1 / -1', background: '#f8f9fa' }}>
-                <strong>Focus Timer</strong>
-                <div style={{ fontSize: '2.5rem', margin: '8px 0', fontFamily: 'monospace', fontWeight: 600 }}>
-                  {formatTime(displayTime)}
-                </div>
-                <div className="button-row" style={{ marginTop: 0 }}>
-                  {!isRunning ? (
-                    <button className="primary-button" onClick={startTimer}>Start Timer</button>
-                  ) : (
-                    <button className="ghost-button" style={{ borderColor: '#e00', color: '#e00' }} onClick={stopTimer}>Stop Timer</button>
-                  )}
-                  <button className="ghost-button" onClick={resetTimer} disabled={isRunning || displayTime === 0}>Reset</button>
-                </div>
-              </div>
-
-              {/* Step 5: Session UI Integration */}
-              {/* Only displays if a completed session exists inside SessionContext */}
-              {session && (
-                <div className="dashboard-card" style={{ gridColumn: '1 / -1' }}>
-                  <strong>Last Recorded Session</strong>
-                  <div style={{ marginTop: '8px', fontSize: '0.95rem' }}>
-                     <div><strong style={{ display: 'inline', color: '#666' }}>Focus Level:</strong> {session.focusLevel}/10</div>
-                     <div><strong style={{ display: 'inline', color: '#666' }}>Mood:</strong> {session.moodAfter}</div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="button-row">
-              <button className="ghost-button" type="button" onClick={logout}>
-                Log out
-              </button>
-            </div>
-          </section>
+          <div className="illustration-container">
+             <img src="/lofi-illustration.png" alt="Lofi character reading" />
+          </div>
         </section>
+
+        <footer className="app-footer">
+          <span style={{ cursor: 'pointer' }} onClick={logout} title="Click to logout">MILLI LOFI TIMER</span>
+        </footer>
+
+        {/* End Session Modal */}
+        {showEndModal && (
+          <div className="modal-overlay">
+            <div className="modal-content auth-panel">
+              <h2 style={{ marginBottom: '8px', fontSize: '1.6rem', color: 'var(--text-timer)' }}>Session Complete</h2>
+              <p style={{ color: 'var(--text-footer)', marginBottom: '24px', fontSize: '0.95rem' }}>Log your mood to track how focus sessions affect your well-being.</p>
+              
+              <div className="auth-form">
+                <div className="field">
+                  <span>Mood before session</span>
+                  <select value={moodBefore} onChange={(e) => setMoodBefore(e.target.value as Mood)} style={{ WebkitAppearance: 'none', appearance: 'none', padding: '12px', borderRadius: '12px', border: '2px solid var(--bg-footer)', outline: 'none' }}>
+                    <option value="happy">Happy</option>
+                    <option value="focused">Focused</option>
+                    <option value="neutral">Neutral</option>
+                    <option value="tired">Tired</option>
+                    <option value="stressed">Stressed</option>
+                  </select>
+                </div>
+
+                <div className="field">
+                  <span>Mood right now</span>
+                  <select value={moodAfter} onChange={(e) => setMoodAfter(e.target.value as Mood)} style={{ WebkitAppearance: 'none', appearance: 'none', padding: '12px', borderRadius: '12px', border: '2px solid var(--bg-footer)', outline: 'none' }}>
+                    <option value="happy">Happy</option>
+                    <option value="focused">Focused</option>
+                    <option value="neutral">Neutral</option>
+                    <option value="tired">Tired</option>
+                    <option value="stressed">Stressed</option>
+                  </select>
+                </div>
+
+                <div className="field">
+                  <span style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span>Focus Level ({focusLevel}/10)</span>
+                  </span>
+                  <input type="range" min="1" max="10" value={focusLevel} onChange={(e) => setFocusLevel(Number(e.target.value))} style={{cursor:'pointer'}} />
+                </div>
+
+                <div className="field">
+                  <span>Any distractions? (Optional)</span>
+                  <input type="text" placeholder="e.g. Phone calls, social media..." value={distractions} onChange={(e) => setDistractions(e.target.value)} />
+                </div>
+
+                <div className="button-row" style={{ marginTop: '16px' }}>
+                  <button className="primary-button" style={{ flex: 1 }} onClick={handleSaveSession}>Save Session</button>
+                  <button className="ghost-button" onClick={handleDiscardSession}>Discard</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     );
   }
 
   if (mode === "register") {
     return (
-      <RegisterPage
+      <div className="app-shell" style={{ justifyContent: 'center' }}>
+        <RegisterPage
+          form={form}
+          error={error}
+          success={success}
+          isSubmitting={isSubmitting}
+          onChange={handleChange}
+          onSubmit={handleRegisterSubmit}
+          onClear={handleClear}
+          onSwitchToLogin={() => handleModeChange("login")}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="app-shell" style={{ justifyContent: 'center' }}>
+      <LoginPage
         form={form}
         error={error}
         success={success}
         isSubmitting={isSubmitting}
         onChange={handleChange}
-        onSubmit={handleRegisterSubmit}
+        onSubmit={handleLoginSubmit}
         onClear={handleClear}
-        onSwitchToLogin={() => handleModeChange("login")}
+        onSwitchToRegister={() => handleModeChange("register")}
       />
-    );
-  }
-
-  return (
-    <LoginPage
-      form={form}
-      error={error}
-      success={success}
-      isSubmitting={isSubmitting}
-      onChange={handleChange}
-      onSubmit={handleLoginSubmit}
-      onClear={handleClear}
-      onSwitchToRegister={() => handleModeChange("register")}
-    />
+    </div>
   );
 }
 

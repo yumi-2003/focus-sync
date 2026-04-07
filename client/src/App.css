@@ -1,193 +1,230 @@
 .app-shell {
   min-height: 100vh;
-  display: grid;
-  place-items: center;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  padding-top: 6vh;
+}
+
+.app-header {
+  margin-bottom: 2rem;
+}
+
+.app-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-header);
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+}
+
+.timer-display {
+  cursor: pointer;
+  margin-bottom: 4rem;
+  transition: transform 0.1s ease;
+  user-select: none;
+}
+
+.timer-display:active {
+  transform: scale(0.98);
+}
+
+.timer-display h2 {
+  font-size: 7rem;
+  font-weight: 700;
+  color: var(--text-timer);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.illustration-container {
+  max-width: 400px;
+  width: 100%;
+  padding: 0 20px;
+  margin-top: -20px;
+  position: relative;
+  z-index: 10;
+}
+
+.illustration-container img {
+  width: 100%;
+  height: auto;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05); /* very subtle, flat-like shadow */
+}
+
+.app-footer {
+  background-color: var(--bg-footer);
+  height: min(15vh, 120px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.app-footer span {
+  color: var(--text-footer);
+  font-weight: 600;
+  letter-spacing: 0.35em;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+}
+
+/* Auth related generic styles if still needed for login screen */
+.auth-layout {
+  width: min(400px, 100%);
+  margin: auto;
   padding: 24px;
 }
 
-.auth-layout {
-  width: min(440px, 100%);
-}
-
-.auth-layout--compact {
-  width: min(440px, 100%);
-}
-
-.auth-panel,
-.dashboard-panel {
+.auth-panel {
   padding: 32px;
-  background: var(--panel);
-  border: 1px solid var(--panel-border);
-  border-radius: 20px;
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.12);
-}
-
-.auth-header {
-  display: grid;
-  gap: 8px;
-  margin-bottom: 24px;
-}
-
-.auth-kicker {
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--muted);
+  background: white;
+  border-radius: 24px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.06);
+  color: var(--text-timer);
 }
 
 .auth-header h1 {
   font-size: 2rem;
-  line-height: 1;
-  color: var(--text-strong);
+  color: var(--text-timer);
+  margin-bottom: 8px;
 }
 
 .auth-header p {
-  color: var(--muted);
-}
-
-.mode-switch {
-  display: inline-flex;
-  width: 100%;
-  padding: 6px;
-  border-radius: 12px;
-  background: #f2f2f2;
-  border: 1px solid var(--panel-border);
-  margin-bottom: 22px;
-}
-
-.mode-switch button {
-  flex: 1;
-}
-
-.mode-switch .active {
-  background: #111;
-  color: #fff;
-}
-
-.auth-form {
-  display: grid;
-  gap: 16px;
+  color: var(--text-footer);
+  font-size: 0.9rem;
 }
 
 .field {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 8px;
+  margin-bottom: 16px;
 }
 
 .field span {
-  font-size: 0.92rem;
+  font-size: 0.85rem;
   font-weight: 600;
-  color: var(--text-strong);
+  color: var(--text-footer);
 }
 
 .field input {
-  width: 100%;
-  border: 1px solid var(--panel-border);
+  padding: 12px 16px;
   border-radius: 12px;
-  padding: 14px 16px;
+  border: 2px solid var(--bg-footer);
   background: #fff;
-  color: var(--text-strong);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  color: var(--text-timer);
 }
 
 .field input:focus {
   outline: none;
-  border-color: #111;
-  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08);
-}
-
-.message {
-  padding: 12px 14px;
-  border-radius: 12px;
-  font-size: 0.95rem;
-}
-
-.message.error {
-  background: #f4f4f4;
-  border: 1px solid #d0d0d0;
-  color: #111;
-}
-
-.message.success {
-  background: #f7f7f7;
-  border: 1px solid #d8d8d8;
-  color: #111;
+  border-color: var(--text-header);
 }
 
 .button-row {
   display: flex;
   gap: 12px;
-  flex-wrap: wrap;
-  margin-top: 8px;
-}
-
-.button-row button,
-.mode-switch button,
-.ghost-button,
-.primary-button {
-  border: 1px solid var(--panel-border);
-  border-radius: 12px;
-  padding: 13px 18px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease,
-    color 0.18s ease;
+  margin-top: 24px;
 }
 
 .primary-button {
-  background: #111;
+  background: var(--text-header);
   color: #fff;
-  box-shadow: none;
-}
-
-.ghost-button,
-.mode-switch button {
-  background: #fff;
-  color: var(--text-strong);
-}
-
-.button-row button:hover,
-.mode-switch button:hover,
-.ghost-button:hover,
-.primary-button:hover {
-  transform: translateY(-1px);
-}
-
-.button-row button:disabled,
-.mode-switch button:disabled,
-.ghost-button:disabled,
-.primary-button:disabled {
-  opacity: 0.7;
-  cursor: wait;
-  transform: none;
-}
-
-.dashboard-meta {
-  display: grid;
-  gap: 14px;
-  margin: 26px 0;
-}
-
-.dashboard-card {
-  padding: 16px 18px;
+  border: none;
+  padding: 12px 24px;
   border-radius: 12px;
-  background: #fff;
-  border: 1px solid var(--panel-border);
+  font-weight: 700;
+  width: 100%;
+  transition: transform 0.1s ease, background 0.2s ease;
 }
 
-.dashboard-card strong {
-  display: block;
-  margin-bottom: 6px;
+.primary-button:hover {
+  background: #e28585;
+  transform: translateY(-2px);
 }
 
-@media (max-width: 480px) {
-  .app-shell {
-    padding: 16px;
-  }
+.ghost-button {
+  background: transparent;
+  color: var(--text-footer);
+  border: 2px solid var(--bg-footer);
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 700;
+  width: 100%;
+  transition: all 0.2s ease;
+}
 
-  .auth-panel,
-  .dashboard-panel {
-    padding: 24px;
-  }
+.ghost-button:hover {
+  background: var(--bg-footer);
+  color: var(--text-timer);
+}
+
+.message {
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+.message.error {
+  background: #ffe3e3;
+  color: #d64a4a;
+}
+
+.message.success {
+  background: #e3ffe5;
+  color: #4ad65c;
+}
+
+.mode-switch {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.mode-switch button {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 8px;
+  color: var(--text-footer);
+  font-weight: 700;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.mode-switch button.active {
+  background: var(--bg-footer);
+  color: var(--text-timer);
+}
+
+/* Hide modal for now if needed, or style it */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(255, 249, 243, 0.8);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+.modal-content {
+  background: white;
+  padding: 32px;
+  border-radius: 24px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+  width: min(400px, 90%);
 }
