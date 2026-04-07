@@ -40,10 +40,17 @@ const MODE_COLORS: Record<TimerMode, string> = {
 };
 
 // Completion images provided by user — map to each mode
-const COMPLETION_IMAGES: Record<TimerMode, string> = {
-  focus: "/completion-go-study.jpg",
-  shortBreak: "/completion-i-did-it.jpg",
-  longBreak: "/completion-graduate-cat.jpg",
+const COMPLETION_IMAGES: Record<TimerMode, string[]> = {
+  focus: [
+    "/completion-go-study.jpg",
+    "/completion-awesome-cat.jpg",
+    "/completion-100-judges.jpg",
+    "/completion-good-job-cat.jpg",
+    "/completion-gordon-star.jpg",
+    "/completion-proud.jpg"
+  ],
+  shortBreak: ["/completion-i-did-it.jpg"],
+  longBreak: ["/completion-graduate-cat.jpg"],
 };
 
 function formatTime(ms: number) {
@@ -84,6 +91,7 @@ export default function App() {
   // --- Completion modal ---
   const [showCompletion, setShowCompletion] = useState(false);
   const [completedMode, setCompletedMode] = useState<TimerMode>("focus");
+  const [completedImage, setCompletedImage] = useState<string>("");
   const [showEndModal, setShowEndModal] = useState(false);
 
   // --- Mood / session form ---
@@ -110,6 +118,8 @@ export default function App() {
     if (prevRunning.current && !isRunning && displayMs === 0) {
       // Timer ran to zero naturally
       setCompletedMode(mode);
+      const images = COMPLETION_IMAGES[mode];
+      setCompletedImage(images[Math.floor(Math.random() * images.length)]);
       setShowCompletion(true);
     }
     prevRunning.current = isRunning;
@@ -268,7 +278,7 @@ export default function App() {
         <div className="completion-overlay">
           <div className="completion-card">
             <img
-              src={COMPLETION_IMAGES[completedMode]}
+              src={completedImage}
               alt="session complete"
               className="completion-img"
               onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}

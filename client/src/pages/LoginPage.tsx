@@ -25,9 +25,7 @@ function LoginPage({
   onSwitchToRegister,
 }: LoginPageProps) {
   return (
-    <main className="app-shell">
-      <section className="auth-layout auth-layout--compact">
-        <section className="auth-panel">
+    <section className="auth-panel">
           <div className="auth-header">
             <span className="auth-kicker">Focus Sync</span>
             <h1>Login</h1>
@@ -91,9 +89,7 @@ function LoginPage({
               </button>
             </div>
           </form>
-        </section>
-      </section>
-    </main>
+    </section>
   );
 }
 

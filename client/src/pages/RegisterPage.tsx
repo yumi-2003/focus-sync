@@ -26,9 +26,7 @@ function RegisterPage({
   onSwitchToLogin,
 }: RegisterPageProps) {
   return (
-    <main className="app-shell">
-      <section className="auth-layout auth-layout--compact">
-        <section className="auth-panel">
+    <section className="auth-panel">
           <div className="auth-header">
             <span className="auth-kicker">Focus Sync</span>
             <h1>Register</h1>
@@ -105,9 +103,7 @@ function RegisterPage({
               </button>
             </div>
           </form>
-        </section>
-      </section>
-    </main>
+    </section>
   );
 }
 
