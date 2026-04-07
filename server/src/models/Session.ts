@@ -8,6 +8,8 @@ export interface ISession extends Document {
   moodAfter: string;
   focusLevel: number;
   distractions?: string;
+  mode: string;
+  backgroundImageUrl?: string;
 }
 
 const sessionSchema = new mongoose.Schema<ISession>({
@@ -18,6 +20,8 @@ const sessionSchema = new mongoose.Schema<ISession>({
   moodAfter: String,
   focusLevel: Number,
   distractions: String,
+  mode: { type: String, required: true },
+  backgroundImageUrl: String,
 });
 
 export default mongoose.model<ISession>("Session", sessionSchema);
