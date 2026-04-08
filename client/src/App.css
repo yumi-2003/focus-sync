@@ -684,3 +684,53 @@
   max-height: 80px;
   overflow-y: auto;
 }
+
+/* ─── Standalone Journal View ────────────────────────────── */
+.journal-view {
+  flex: 1;
+  padding: 28px 24px;
+  max-width: 720px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.journal-card {
+  background: #fff;
+  border-radius: 28px;
+  padding: 32px;
+  border: 2px solid var(--bg-footer);
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.04);
+}
+
+.journal-sub {
+  color: var(--text-footer);
+  font-size: 1rem;
+  margin-top: -15px;
+  margin-bottom: 5px;
+}
+
+.standalone-textarea {
+  font-family: inherit;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  padding: 16px !important;
+  border-color: var(--bg-footer) !important;
+}
+
+.standalone-upload {
+  height: 180px;
+}
+
+.standalone-picker {
+  right: 0;
+  bottom: 100%;
+}
+
+.save-journal-btn {
+  margin-top: 10px;
+  font-size: 1.1rem;
+  padding: 16px;
+}

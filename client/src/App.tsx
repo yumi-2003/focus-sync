@@ -10,7 +10,7 @@ import RegisterPage from "./pages/RegisterPage";
 import { type Mood } from "./types";
 
 type AuthMode = "login" | "register";
-type AppView = "timer" | "history" | "settings";
+type AppView = "timer" | "history" | "settings" | "journal";
 
 interface FormState {
   email: string;
@@ -108,6 +108,14 @@ export default function App() {
   const [savingSession, setSavingSession] = useState(false);
   const [saveError, setSaveError] = useState("");
 
+  const [isSavingStandalone, setIsSavingStandalone] = useState(false);
+  const [standaloneText, setStandaloneText] = useState("");
+  const [standaloneMood, setStandaloneMood] = useState<Mood>("neutral");
+  const [standaloneBgImageFile, setStandaloneBgImageFile] = useState<File | null>(null);
+  const [standaloneBgPreviewUrl, setStandaloneBgPreviewUrl] = useState<string | null>(null);
+  const [showStandaloneEmoji, setShowStandaloneEmoji] = useState(false);
+  const standaloneFileRef = useRef<HTMLInputElement>(null);
+
   // --- History ---
   const [history, setHistory] = useState<HistorySession[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
@@ -191,6 +199,53 @@ export default function App() {
   const onEmojiClick = (emojiData: EmojiClickData) => {
     setJournal(prev => prev + emojiData.emoji);
     setShowEmojiPicker(false);
+  };
+
+  const onStandaloneEmojiClick = (emojiData: EmojiClickData) => {
+    setStandaloneText(prev => prev + emojiData.emoji);
+    setShowStandaloneEmoji(false);
+  };
+
+  const handleStandaloneFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+    setStandaloneBgImageFile(file);
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setStandaloneBgPreviewUrl(url);
+    } else {
+      setStandaloneBgPreviewUrl(null);
+    }
+  };
+
+  const handleSaveStandalone = async () => {
+    if (!token || !standaloneText.trim()) return;
+    setIsSavingStandalone(true);
+    try {
+      const now = new Date().toISOString();
+      const saved = await createSession({
+        startTime: now,
+        endTime: now,
+        moodBefore: standaloneMood,
+        moodAfter: standaloneMood,
+        focusLevel: 5,
+        distractions: "",
+        journal: standaloneText,
+        mode: "Journal",
+        backgroundImage: standaloneBgImageFile,
+      }, token);
+      setHistory(prev => [saved, ...prev]);
+      // Reset
+      setStandaloneText("");
+      setStandaloneMood("neutral");
+      setStandaloneBgImageFile(null);
+      setStandaloneBgPreviewUrl(null);
+      if (standaloneFileRef.current) standaloneFileRef.current.value = "";
+      alert("Journal entry saved! ✨");
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Could not save journal.");
+    } finally {
+      setIsSavingStandalone(false);
+    }
   };
 
   // ── Completion modal handlers ──────────────────────────────────────
@@ -425,6 +480,7 @@ export default function App() {
         <span className="nav-logo">LOFI TIMER</span>
         <div className="nav-links">
           <button className={view === "timer" ? "nav-btn active" : "nav-btn"} onClick={() => setView("timer")}>⏱ Timer</button>
+          <button className={view === "journal" ? "nav-btn active" : "nav-btn"} onClick={() => setView("journal")}>✍️ Journal</button>
           <button className={view === "history" ? "nav-btn active" : "nav-btn"} onClick={() => { setView("history"); loadHistory(); }}>📚 History</button>
           <button className={view === "settings" ? "nav-btn active" : "nav-btn"} onClick={() => setView("settings")}>⚙️ Settings</button>
           <button className="nav-btn logout-btn" onClick={logout} title="Logout">👋</button>
@@ -467,6 +523,92 @@ export default function App() {
           {/* Illustration */}
           <div className="illustration-container">
             <img src="/lofi-illustration.png" alt="Lofi character" />
+          </div>
+        </section>
+      )}
+
+      {/* ════════════════ JOURNAL VIEW ════════════════ */}
+      {view === "journal" && (
+        <section className="journal-view">
+          <h2 className="section-title">✍️ Daily Journal</h2>
+          <div className="journal-card">
+            <p className="journal-sub">How are you feeling today? Write your heart out.</p>
+
+            <div className="field">
+              <span>Current Mood</span>
+              <div className="mood-picker">
+                {(["happy", "focused", "neutral", "tired", "stressed"] as Mood[]).map(m => (
+                  <button key={m} className={`mood-btn ${standaloneMood === m ? "active" : ""}`}
+                    onClick={() => setStandaloneMood(m)} title={m}>
+                    {MOOD_EMOJIS[m]}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="field">
+              <div className="label-row">
+                <span>Your Thoughts</span>
+                <button 
+                  className="emoji-toggle" 
+                  onClick={() => setShowStandaloneEmoji(!showStandaloneEmoji)}
+                  type="button"
+                >
+                  😊
+                </button>
+              </div>
+              <div className="journal-container">
+                <textarea
+                  className="standalone-textarea"
+                  placeholder="Today I felt..."
+                  value={standaloneText}
+                  onChange={e => setStandaloneText(e.target.value)}
+                  rows={10}
+                />
+                {showStandaloneEmoji && (
+                  <div className="emoji-picker-popover standalone-picker">
+                    <div className="emoji-picker-backdrop" onClick={() => setShowStandaloneEmoji(false)} />
+                    <EmojiPicker onEmojiClick={onStandaloneEmojiClick} />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="field">
+              <span>Background Image <span className="optional">optional</span></span>
+              <div
+                className="upload-zone standalone-upload"
+                onClick={() => standaloneFileRef.current?.click()}
+                style={standaloneBgPreviewUrl ? { backgroundImage: `url(${standaloneBgPreviewUrl})` } : {}}
+              >
+                {!standaloneBgPreviewUrl && (
+                  <div className="upload-placeholder">
+                    <span className="upload-icon">🖼️</span>
+                    <span>Click to set journal background</span>
+                  </div>
+                )}
+                <input
+                  ref={standaloneFileRef}
+                  type="file"
+                  accept="image/*"
+                  style={{ display: "none" }}
+                  onChange={handleStandaloneFileSelect}
+                />
+              </div>
+              {standaloneBgPreviewUrl && (
+                <button className="ghost-button remove-img" onClick={() => { setStandaloneBgImageFile(null); setStandaloneBgPreviewUrl(null); if (standaloneFileRef.current) standaloneFileRef.current.value = ""; }}>
+                  Remove image
+                </button>
+              )}
+            </div>
+
+            <button 
+              className="primary-button save-journal-btn" 
+              onClick={handleSaveStandalone}
+              disabled={isSavingStandalone || !standaloneText.trim()}
+            >
+              {isSavingStandalone ? "Saving..." : "Save Daily Entry"}
+            </button>
           </div>
         </section>
       )}
