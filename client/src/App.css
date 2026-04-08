@@ -230,6 +230,8 @@
   display: flex;
   flex-direction: column;
   gap: 18px;
+  max-height: 90vh;
+  overflow-y: auto;
   animation: slideUp 0.35s cubic-bezier(0.16,1,0.3,1);
 }
 
@@ -283,7 +285,11 @@
   gap: 16px;
 }
 
-.mood-picker { display: flex; gap: 8px; }
+.mood-picker { 
+  display: flex; 
+  gap: 8px; 
+  flex-wrap: wrap;
+}
 
 .mood-btn {
   font-size: 1.5rem;
@@ -611,4 +617,70 @@
 
 @media (max-width: 360px) {
   .history-grid { grid-template-columns: 1fr; }
+}
+
+/* ─── Journal & Emoji Picker ───────────────────────────────── */
+.label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.emoji-toggle {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 8px;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.emoji-toggle:hover {
+  background: var(--bg-footer);
+}
+
+.journal-container {
+  position: relative;
+  width: 100%;
+}
+
+.journal-container textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.emoji-picker-popover {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  z-index: 1000;
+  margin-bottom: 8px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+  border-radius: 8px;
+  overflow: hidden;
+  animation: slideUp 0.2s ease-out;
+}
+
+.emoji-picker-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: transparent;
+}
+
+.history-journal {
+  font-size: 0.8rem;
+  color: var(--text-timer);
+  line-height: 1.4;
+  margin-top: 4px;
+  background: rgba(255, 255, 255, 0.5);
+  padding: 8px;
+  border-radius: 8px;
+  font-style: italic;
+  max-height: 80px;
+  overflow-y: auto;
 }

@@ -10,6 +10,7 @@ export interface ISession extends Document {
   distractions?: string;
   mode: string;
   backgroundImageUrl?: string;
+  journal?: string;
 }
 
 const sessionSchema = new mongoose.Schema<ISession>({
@@ -22,6 +23,7 @@ const sessionSchema = new mongoose.Schema<ISession>({
   distractions: String,
   mode: { type: String, required: true },
   backgroundImageUrl: String,
+  journal: String,
 });
 
 export default mongoose.model<ISession>("Session", sessionSchema);

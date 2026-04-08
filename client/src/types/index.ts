@@ -14,4 +14,5 @@ export interface Session {
   moodAfter: Mood;
   focusLevel: number;
   distractions?: string;
+  journal?: string;
 }

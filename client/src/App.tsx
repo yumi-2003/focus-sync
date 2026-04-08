@@ -1,5 +1,6 @@
 import { type ChangeEvent, type FormEvent, useState, useEffect, useRef } from "react";
 import "./App.css";
+import EmojiPicker, { type EmojiClickData } from "emoji-picker-react";
 import { useAuth } from "./context/AuthContext";
 import { useTimer, type TimerMode } from "./context/TimerContext";
 import { loginUser, registerUser } from "./services/auth";
@@ -99,6 +100,8 @@ export default function App() {
   const [moodAfter, setMoodAfter] = useState<Mood>("focused");
   const [focusLevel, setFocusLevel] = useState(5);
   const [distractions, setDistractions] = useState("");
+  const [journal, setJournal] = useState("");
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [bgImageFile, setBgImageFile] = useState<File | null>(null);
   const [bgPreviewUrl, setBgPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -185,6 +188,11 @@ export default function App() {
     }
   };
 
+  const onEmojiClick = (emojiData: EmojiClickData) => {
+    setJournal(prev => prev + emojiData.emoji);
+    setShowEmojiPicker(false);
+  };
+
   // ── Completion modal handlers ──────────────────────────────────────
   const handleCompletionContinue = () => {
     setShowCompletion(false);
@@ -219,6 +227,7 @@ export default function App() {
         moodAfter,
         focusLevel,
         distractions,
+        journal,
         mode: MODE_LABELS[mode],
         backgroundImage: bgImageFile,
       }, token);
@@ -233,7 +242,8 @@ export default function App() {
     setShowEndModal(false);
     resetTimer();
     setMoodBefore("neutral"); setMoodAfter("focused"); setFocusLevel(5);
-    setDistractions(""); setBgImageFile(null); setBgPreviewUrl(null);
+    setDistractions(""); setJournal(""); setShowEmojiPicker(false);
+    setBgImageFile(null); setBgPreviewUrl(null);
     setSaveError("");
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
@@ -373,6 +383,33 @@ export default function App() {
                 value={distractions} onChange={e => setDistractions(e.target.value)} />
             </div>
 
+            <div className="field">
+              <div className="label-row">
+                <span>Journal / Notes <span className="optional">optional</span></span>
+                <button 
+                  className="emoji-toggle" 
+                  onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                  type="button"
+                >
+                  😊
+                </button>
+              </div>
+              <div className="journal-container">
+                <textarea
+                  placeholder="How did it go? What did you accomplish?"
+                  value={journal}
+                  onChange={e => setJournal(e.target.value)}
+                  rows={3}
+                />
+                {showEmojiPicker && (
+                  <div className="emoji-picker-popover">
+                    <div className="emoji-picker-backdrop" onClick={() => setShowEmojiPicker(false)} />
+                    <EmojiPicker onEmojiClick={onEmojiClick} />
+                  </div>
+                )}
+              </div>
+            </div>
+
             <div className="modal-actions">
               <button className="primary-button" onClick={handleSaveSession} disabled={savingSession}>
                 {savingSession ? "Saving…" : "Save Session"}
@@ -463,6 +500,7 @@ export default function App() {
                   </div>
                   <div className="history-focus">Focus: {s.focusLevel}/10</div>
                   {s.distractions && <div className="history-distractions">🔔 {s.distractions}</div>}
+                  {s.journal && <div className="history-journal">📝 {s.journal}</div>}
                 </div>
               </div>
             ))}

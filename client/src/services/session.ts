@@ -11,6 +11,7 @@ export interface HistorySession {
   distractions?: string;
   mode: string;
   backgroundImageUrl?: string;
+  journal?: string;
 }
 
 export interface CreateSessionPayload {
@@ -21,6 +22,7 @@ export interface CreateSessionPayload {
   focusLevel: number;
   distractions: string;
   mode: string;
+  journal?: string;
   backgroundImage?: File | null;
 }
 
@@ -33,6 +35,9 @@ export async function createSession(payload: CreateSessionPayload, token: string
   form.append("focusLevel", String(payload.focusLevel));
   form.append("distractions", payload.distractions);
   form.append("mode", payload.mode);
+  if (payload.journal) {
+    form.append("journal", payload.journal);
+  }
   if (payload.backgroundImage) {
     form.append("backgroundImage", payload.backgroundImage);
   }

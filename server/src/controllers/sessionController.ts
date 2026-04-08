@@ -6,7 +6,7 @@ import { AuthRequest } from "../middleware/authMiddleware";
 export const createSession = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId!;
-    const { startTime, endTime, moodBefore, moodAfter, focusLevel, distractions, mode } = req.body;
+    const { startTime, endTime, moodBefore, moodAfter, focusLevel, distractions, mode, journal } = req.body;
 
     if (!mode) {
       return res.status(400).json({ msg: "mode is required" });
@@ -26,6 +26,7 @@ export const createSession = async (req: AuthRequest, res: Response) => {
       focusLevel: Number(focusLevel) || 5,
       distractions,
       mode,
+      journal,
       backgroundImageUrl,
     });
 
