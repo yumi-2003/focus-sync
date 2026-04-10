@@ -15,11 +15,12 @@ interface TimerContextType {
   displayMs: number;        // remaining ms for current segment
   sessionStartTime: Date | null;
   elapsedTotal: number;     // total ms actually spent in focus (for saving)
+  resetTimer: () => void;
   setMode: (m: TimerMode) => void;
   updateSettings: (s: Partial<TimerSettings>) => void;
   startTimer: () => void;
   stopTimer: () => void;
-  resetTimer: () => void;
+  requestNotificationPermission: () => Promise<boolean>;
 }
 
 const DEFAULT_SETTINGS: TimerSettings = {
@@ -28,6 +29,9 @@ const DEFAULT_SETTINGS: TimerSettings = {
   longBreakMinutes: 15,
 };
 
+// why use createContext here?
+// createContext is used to create a context
+// context is a way to share data between components without prop drilling
 export const TimerContext = createContext<TimerContextType | undefined>(undefined);
 
 export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -44,16 +48,49 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const elapsedAtStartRef = useRef(0);
   const intervalRef = useRef<number | null>(null);
 
+  //why use callback here?
+  // usecallback is used to memoize the function so that it is not recreated on every render
+  // this is important because the function is used in the useEffect hook
+  // if we don't use useCallback, the useEffect hook will run on every render
+  // and the timer will not work properly
   const durationMs = useCallback((m: TimerMode, s: TimerSettings) => {
     if (m === "focus") return s.focusMinutes * 60 * 1000;
     if (m === "shortBreak") return s.shortBreakMinutes * 60 * 1000;
     return s.longBreakMinutes * 60 * 1000;
   }, []);
 
+  // what tick is for - 
+  // tick is a function that is called every 200ms
+  // it is used to update the remaining time
+  // it is called every 200ms because the interval is set to 200ms
+  // this is done to make the timer more accurate and responsive 
+  // if we don't use tick, the timer will not update the remaining time
+  // if we don't use useCallback, the tick function will be recreated on every render
+  // and the interval will be cleared and set again on every render
+  // this will cause the timer to not work properly
+  // if we don't use intervalStartRef.current, the timer will not work properly
+  // it will reset the timer to 0 every time the component re-renders
+  // if we don't use elapsedAtStartRef.current, the timer will not work properly
+  // it will reset the timer to 0 every time the component re-renders
+  // if we don't use tickRef.current, the timer will not work properly
+  // it will reset the timer to 0 every time the component re-renders
   const tick = useCallback(() => {
     if (intervalStartRef.current === null) return;
-    const elapsed = Date.now() - intervalStartRef.current + elapsedAtStartRef.current;
+    // why use elapsedAtStartRef.current?
+    // elapsedAtStartRef.current is used to store the elapsed time at the start of the interval
+    // this is important because the interval is not reset when the component re-renders
+    // if we don't use elapsedAtStartRef.current, the timer will not work properly
+    // it will reset the timer to 0 every time the component re-renders
+    const elapsed = Date.now() - intervalStartRef.current + elapsedAtStartRef.current; 
+    // how elapsed time works - 
+    // Date.now() - intervalStartRef.current gives the time elapsed since the interval started
+    // elapsedAtStartRef.current is the time elapsed before the interval started
+    // so the total elapsed time is the sum of the two
     const total = durationMs(mode, settings);
+    // why total - elasped?
+    // total is the total time for the current mode
+    // elapsed is the time elapsed since the interval started
+    // so the remaining time is the total time minus the elapsed time
     const remaining = Math.max(0, total - elapsed);
     setDisplayMs(remaining);
     if (remaining === 0) {
@@ -61,7 +98,12 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (intervalRef.current) window.clearInterval(intervalRef.current);
       setIsRunning(false);
       intervalStartRef.current = null;
+      
+      // Notify the user
+      playChime();
+      showNotification();
     }
+
   }, [mode, settings, durationMs]);
 
   // Keep interval callback fresh
@@ -107,12 +149,40 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const setMode = (m: TimerMode) => {
+    // If the timer was running, record the time spent in the current mode before switching
+    if (isRunning && intervalStartRef.current !== null) {
+      const consumed = Date.now() - intervalStartRef.current;
+      if (mode === "focus") setElapsedTotal(p => p + consumed);
+    }
+    
     clearTick();
     setIsRunning(false);
     intervalStartRef.current = null;
     elapsedAtStartRef.current = 0;
     setModeState(m);
     setDisplayMs(durationMs(m, settings));
+  };
+
+
+  const playChime = () => {
+    const audio = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+    audio.volume = 0.5;
+    audio.play().catch(() => {}); // Ignore errors if user hasn't interacted yet
+  };
+
+  const showNotification = () => {
+    if (Notification.permission === "granted") {
+      new Notification("Focus Sync", {
+        body: mode === "focus" ? "Session complete! Time for a break. ☕" : "Break's over! Ready to focus? 🎯",
+        icon: "/favicon.svg"
+      });
+    }
+  };
+
+  const requestNotificationPermission = async () => {
+    if (!("Notification" in window)) return false;
+    const permission = await Notification.requestPermission();
+    return permission === "granted";
   };
 
   const updateSettings = (partial: Partial<TimerSettings>) => {
@@ -130,6 +200,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     <TimerContext.Provider value={{
       mode, settings, isRunning, displayMs, sessionStartTime, elapsedTotal,
       setMode, updateSettings, startTimer, stopTimer, resetTimer,
+      requestNotificationPermission
     }}>
       {children}
     </TimerContext.Provider>

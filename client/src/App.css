@@ -509,6 +509,7 @@
   color: var(--text-timer);
   transition: border-color 0.2s;
   width: 100%;
+  font-size: 16px; /* Prevent iOS zoom */
 }
 
 .field input:focus, .field select:focus, .field textarea:focus {
@@ -599,6 +600,12 @@
 
 .button-row { display: flex; gap: 12px; }
 
+/* ─── Tap Feedback ─────────────────────────────────────────── */
+.nav-btn:active, .ctrl-btn:active, .primary-button:active, .ghost-button:active, .mode-tab:active, .num-btn:active {
+  transform: scale(0.95);
+  opacity: 0.8;
+}
+
 /* ─── Animations ──────────────────────────────────────────────── */
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes slideUp {
@@ -607,16 +614,363 @@
 }
 
 /* ─── Responsive ──────────────────────────────────────────────── */
-@media (max-width: 540px) {
-  .top-nav { padding: 12px 16px; }
-  .nav-btn { padding: 7px 10px; font-size: 0.78rem; }
-  .timer-display h2 { font-size: 4.8rem; }
-  .mood-row { grid-template-columns: 1fr; }
-  .history-grid { grid-template-columns: 1fr 1fr; }
+
+/* ── Tablet (≤ 768px) ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Nav */
+  .top-nav {
+    padding: 12px 18px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .nav-links {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .nav-btn {
+    padding: 7px 11px;
+    font-size: 0.8rem;
+  }
+
+  /* Timer */
+  .main-content {
+    padding: 24px 16px 0;
+  }
+
+  .timer-display h2 {
+    font-size: 5.5rem;
+  }
+
+  /* Mode tabs */
+  .mode-tabs {
+    flex-wrap: wrap;
+    justify-content: center;
+    border-radius: 20px;
+    gap: 4px;
+    padding: 4px;
+  }
+
+  .mode-tab {
+    padding: 7px 14px;
+    font-size: 0.8rem;
+  }
+
+  /* History */
+  .history-view {
+    padding: 20px 16px;
+  }
+
+  .history-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+  }
+
+  /* Settings */
+  .settings-view {
+    padding: 20px 16px;
+  }
+
+  .settings-card {
+    padding: 20px;
+  }
+
+  /* Journal */
+  .journal-view {
+    padding: 20px 16px;
+  }
+
+  .journal-card {
+    padding: 22px 18px;
+  }
+
+  /* Auth */
+  .auth-panel {
+    padding: 28px 22px;
+  }
+
+  /* Modal */
+  .modal-content {
+    padding: 24px 20px;
+    border-radius: 20px;
+  }
+
+  /* Completion card */
+  .completion-card {
+    padding: 28px 22px;
+  }
 }
 
+/* ── Mobile (≤ 540px) ─────────────────────────────────────────── */
+@media (max-width: 540px) {
+  /* Nav — scrollable row on small screens */
+  .top-nav {
+    padding: 10px 14px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .nav-links {
+    width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    gap: 5px;
+    padding-bottom: 2px;
+    /* hide scrollbar but keep scrollable */
+    scrollbar-width: none;
+  }
+
+  .nav-links::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav-btn {
+    padding: 6px 10px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .nav-logo {
+    font-size: 0.9rem;
+  }
+
+  /* Timer */
+  .main-content {
+    padding: 18px 14px 0;
+  }
+
+  .timer-display h2 {
+    font-size: 4.5rem;
+  }
+
+  .timer-hint {
+    font-size: 0.75rem;
+  }
+
+  /* Mode tabs */
+  .mode-tabs {
+    width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    border-radius: 16px;
+    padding: 4px;
+    scrollbar-width: none;
+    margin-bottom: 22px;
+  }
+
+  .mode-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mode-tab {
+    padding: 7px 12px;
+    font-size: 0.78rem;
+    flex-shrink: 0;
+  }
+
+  /* Timer controls */
+  .timer-controls {
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .ctrl-btn {
+    padding: 7px 14px;
+    font-size: 0.78rem;
+  }
+
+  /* Illustration */
+  .illustration-container {
+    max-width: 260px;
+    padding: 0 10px;
+  }
+
+  /* Mood row: single column */
+  .mood-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  /* Modal — nearly full-screen */
+  .modal-overlay {
+    padding: 10px;
+    align-items: flex-end;
+  }
+
+  .modal-content {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 24px 24px 0 0;
+    padding: 22px 16px;
+    max-height: 92vh;
+  }
+
+  .session-modal h2 {
+    font-size: 1.3rem;
+  }
+
+  /* Modal actions stack vertically */
+  .modal-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* Completion card */
+  .completion-card {
+    padding: 24px 18px;
+    border-radius: 20px;
+  }
+
+  .completion-img {
+    width: 140px;
+    height: 140px;
+  }
+
+  .completion-card h2 {
+    font-size: 1.35rem;
+  }
+
+  /* History */
+  .history-view {
+    padding: 16px 12px;
+  }
+
+  .history-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .history-card {
+    min-height: 160px;
+  }
+
+  .history-card-inner {
+    padding: 14px 12px;
+    gap: 4px;
+  }
+
+  .section-title {
+    font-size: 1.2rem;
+    margin-bottom: 14px;
+  }
+
+  /* Settings */
+  .settings-view {
+    padding: 16px 12px;
+  }
+
+  .settings-card {
+    padding: 18px 14px;
+    gap: 18px;
+  }
+
+  /* Stack label above the number row */
+  .settings-field {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .settings-field label {
+    width: 100%;
+    font-size: 0.85rem;
+  }
+
+  /* Journal */
+  .journal-view {
+    padding: 16px 12px;
+  }
+
+  .journal-card {
+    padding: 18px 14px;
+    gap: 16px;
+    border-radius: 20px;
+  }
+
+  .standalone-textarea {
+    font-size: 1rem !important;
+  }
+
+  /* Auth */
+  .auth-shell {
+    padding: 16px;
+  }
+
+  .auth-panel {
+    padding: 22px 16px;
+    border-radius: 20px;
+  }
+
+  .auth-header h1 {
+    font-size: 1.7rem;
+  }
+
+  /* Emoji picker — constrain width & reposition on small screens */
+  .emoji-picker-popover {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100% !important;
+    margin-bottom: 0;
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -8px 30px rgba(0,0,0,0.18);
+  }
+
+  /* Override the library's default fixed width on mobile */
+  .emoji-picker-popover > * {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .standalone-picker {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-radius: 16px 16px 0 0;
+  }
+
+  /* Upload zone */
+  .upload-zone {
+    height: 120px;
+  }
+
+  .standalone-upload {
+    height: 140px;
+  }
+}
+
+/* ── Small mobile (≤ 360px) ──────────────────────────────────── */
 @media (max-width: 360px) {
-  .history-grid { grid-template-columns: 1fr; }
+  .timer-display h2 {
+    font-size: 3.8rem;
+  }
+
+  .history-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mode-tab {
+    font-size: 0.72rem;
+    padding: 6px 10px;
+  }
+
+  .nav-btn {
+    font-size: 0.7rem;
+    padding: 5px 8px;
+  }
+
+  .auth-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .completion-img {
+    width: 110px;
+    height: 110px;
+  }
 }
 
 /* ─── Journal & Emoji Picker ───────────────────────────────── */

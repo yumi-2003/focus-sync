@@ -77,7 +77,7 @@ const SERVER = import.meta.env.VITE_API_URL?.replace("/api", "") ?? "http://loca
 export default function App() {
   const { user, token, login, logout } = useAuth();
   const { mode, settings, isRunning, displayMs, sessionStartTime, elapsedTotal,
-    setMode, updateSettings, startTimer, stopTimer, resetTimer } = useTimer();
+    setMode, updateSettings, startTimer, stopTimer, resetTimer, requestNotificationPermission } = useTimer();
 
   // --- Auth state ---
   const [authMode, setAuthMode] = useState<AuthMode>("login");
@@ -306,6 +306,12 @@ export default function App() {
   // ── Settings save ──────────────────────────────────────────────────
   const handleSaveSettings = () => {
     updateSettings(draftSettings);
+  };
+
+  const handleEnableNotifications = async () => {
+    const granted = await requestNotificationPermission();
+    if (granted) alert("Notifications enabled! 🔔");
+    else alert("Notification permission denied or not supported.");
   };
 
   // ══════════════════════════════════════════════════════════════════
@@ -695,9 +701,14 @@ export default function App() {
               </div>
             </div>
 
-            <button className="primary-button settings-save" onClick={handleSaveSettings}>
-              Apply Settings
-            </button>
+            <div className="button-group" style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "12px" }}>
+              <button className="primary-button" onClick={handleSaveSettings}>
+                Apply Settings
+              </button>
+              <button className="ghost-button" onClick={handleEnableNotifications}>
+                🔔 Enable Desktop Notifications
+              </button>
+            </div>
           </div>
         </section>
       )}
