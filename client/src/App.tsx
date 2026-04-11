@@ -5,12 +5,13 @@ import { useAuth } from "./context/AuthContext";
 import { useTimer, type TimerMode } from "./context/TimerContext";
 import { loginUser, registerUser } from "./services/auth";
 import { createSession, fetchSessions, type HistorySession } from "./services/session";
+import { fetchTodos, createTodo, updateTodoStatus, deleteTodo } from "./services/todo";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
-import { type Mood } from "./types";
+import { type Mood, type Todo } from "./types";
 
 type AuthMode = "login" | "register";
-type AppView = "timer" | "history" | "settings" | "journal";
+type AppView = "timer" | "history" | "settings" | "journal" | "tasks";
 
 interface FormState {
   email: string;
@@ -117,8 +118,14 @@ export default function App() {
   const standaloneFileRef = useRef<HTMLInputElement>(null);
 
   // --- History ---
-  const [history, setHistory] = useState<HistorySession[]>([]);
+  const [history, setHistory] = useState<any[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+
+  // --- Todos ---
+  const [todos, setTodos] = useState<Todo[]>([]);
+  const [todosLoading, setTodosLoading] = useState(false);
+  const [newTodo, setNewTodo] = useState("");
+  const [isAddingTodo, setIsAddingTodo] = useState(false);
 
   // --- Settings ---
   const [draftSettings, setDraftSettings] = useState(settings);
@@ -136,9 +143,12 @@ export default function App() {
     prevRunning.current = isRunning;
   }, [isRunning, displayMs, mode]);
 
-  // Preload history when user logs in
+  // Preload history and todos when user logs in
   useEffect(() => {
-    if (user && token) loadHistory();
+    if (user && token) {
+      loadHistory();
+      loadTodos();
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, token]);
 
@@ -153,6 +163,60 @@ export default function App() {
       setHistory(data);
     } finally {
       setHistoryLoading(false);
+    }
+  };
+
+  const loadTodos = async () => {
+    if (!token) return;
+    setTodosLoading(true);
+    try {
+      const data = await fetchTodos(token);
+      setTodos(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setTodosLoading(false);
+    }
+  };
+
+  const handleAddTodo = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!newTodo.trim() || !token) return;
+    setIsAddingTodo(true);
+    try {
+      const saved = await createTodo(newTodo, token);
+      setTodos(prev => [saved, ...prev]);
+      setNewTodo("");
+    } catch (err) {
+      alert("Failed to add task");
+    } finally {
+      setIsAddingTodo(false);
+    }
+  };
+
+  const handleToggleTodo = async (id: string, completed: boolean) => {
+    if (!token) return;
+    // Optimistic update
+    setTodos(prev => prev.map(t => t._id === id ? { ...t, completed: !completed } : t));
+    try {
+      await updateTodoStatus(id, !completed, token);
+    } catch (err) {
+      // Revert if failed
+      setTodos(prev => prev.map(t => t._id === id ? { ...t, completed } : t));
+      alert("Failed to update task");
+    }
+  };
+
+  const handleDeleteTodo = async (id: string) => {
+    if (!token) return;
+    if (!confirm("Are you sure you want to delete this task?")) return;
+    const oldTodos = [...todos];
+    setTodos(prev => prev.filter(t => t._id !== id));
+    try {
+      await deleteTodo(id, token);
+    } catch (err) {
+      setTodos(oldTodos);
+      alert("Failed to delete task");
     }
   };
 
@@ -486,6 +550,7 @@ export default function App() {
         <span className="nav-logo">LOFI TIMER</span>
         <div className="nav-links">
           <button className={view === "timer" ? "nav-btn active" : "nav-btn"} onClick={() => setView("timer")}>⏱ Timer</button>
+          <button className={view === "tasks" ? "nav-btn active" : "nav-btn"} onClick={() => { setView("tasks"); loadTodos(); }}>✅ Tasks</button>
           <button className={view === "journal" ? "nav-btn active" : "nav-btn"} onClick={() => setView("journal")}>✍️ Journal</button>
           <button className={view === "history" ? "nav-btn active" : "nav-btn"} onClick={() => { setView("history"); loadHistory(); }}>📚 History</button>
           <button className={view === "settings" ? "nav-btn active" : "nav-btn"} onClick={() => setView("settings")}>⚙️ Settings</button>
@@ -529,6 +594,55 @@ export default function App() {
           {/* Illustration */}
           <div className="illustration-container">
             <img src="/lofi-illustration.png" alt="Lofi character" />
+          </div>
+        </section>
+      )}
+
+      {/* ════════════════ TASKS VIEW ════════════════ */}
+      {view === "tasks" && (
+        <section className="tasks-view">
+          <h2 className="section-title">✅ Daily Tasks</h2>
+          
+          <div className="tasks-card">
+            <p className="tasks-sub">What do you want to focus on today?</p>
+            
+            <form className="add-task-form" onSubmit={handleAddTodo}>
+              <input 
+                type="text" 
+                placeholder="Add a new task..." 
+                value={newTodo}
+                onChange={e => setNewTodo(e.target.value)}
+                disabled={isAddingTodo}
+              />
+              <button type="submit" className="primary-button" disabled={isAddingTodo || !newTodo.trim()}>
+                {isAddingTodo ? "..." : "+ Add"}
+              </button>
+            </form>
+
+            <div className="tasks-list">
+              {todosLoading && <p className="history-empty">Loading tasks...</p>}
+              {!todosLoading && todos.length === 0 && (
+                <div className="history-empty">
+                  <p>No tasks yet!</p>
+                  <p>Add a task to stay organized and focused.</p>
+                </div>
+              )}
+              {todos.map(t => (
+                <div key={t._id} className={`todo-item ${t.completed ? "completed" : ""}`}>
+                  <label className="todo-checkbox-label">
+                    <input 
+                      type="checkbox" 
+                      checked={t.completed} 
+                      onChange={() => handleToggleTodo(t._id, t.completed)}
+                    />
+                    <span className="todo-text">{t.text}</span>
+                  </label>
+                  <button className="delete-task-btn" onClick={() => handleDeleteTodo(t._id)} title="Delete task">
+                    🗑️
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
       )}

@@ -8,6 +8,7 @@ import fs from "fs";
 
 import authRoutes from "./routes/authRoute";
 import sessionRoutes from "./routes/sessionRoute";
+import todoRoutes from "./routes/todoRoute";
 
 dotenv.config();
 
@@ -26,6 +27,7 @@ app.use("/uploads", express.static(uploadsDir));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/sessions", sessionRoutes);
+app.use("/api/todos", todoRoutes);
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Focus Sync Server is running");

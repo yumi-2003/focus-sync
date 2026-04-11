@@ -16,3 +16,10 @@ export interface Session {
   distractions?: string;
   journal?: string;
 }
+export interface Todo {
+  _id: string;
+  userId: string;
+  text: string;
+  completed: boolean;
+  createdAt: string;
+}
