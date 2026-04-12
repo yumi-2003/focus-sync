@@ -1223,3 +1223,254 @@
     width: 100%;
   }
 }
+
+/* ─── Money Tracker ────────────────────────────────────────────── */
+.money-view {
+  flex: 1;
+  padding: 28px 24px;
+  max-width: 640px;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Summary card */
+.money-summary-card {
+  background: linear-gradient(135deg, #EF9696 0%, #f5b8b8 100%);
+  border-radius: 24px;
+  padding: 28px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 8px 28px rgba(239, 150, 150, 0.35);
+  animation: slideUp 0.4s cubic-bezier(0.16,1,0.3,1);
+}
+
+.money-summary-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.85);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.money-total {
+  font-size: 3.2rem;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.12);
+}
+
+.money-count {
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.78);
+  font-weight: 500;
+}
+
+/* Add form card */
+.money-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 24px;
+  border: 2px solid var(--bg-footer);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  animation: slideUp 0.45s cubic-bezier(0.16,1,0.3,1);
+}
+
+.money-sub {
+  font-size: 0.88rem;
+  color: var(--text-footer);
+  font-weight: 600;
+  margin: 0;
+}
+
+.add-expense-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.expense-form-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.expense-input-desc {
+  flex: 1;
+  padding: 11px 14px;
+  border-radius: 12px;
+  border: 2px solid var(--bg-footer);
+  background: #fff;
+  color: var(--text-timer);
+  font-size: 0.9rem;
+  transition: border-color 0.2s;
+}
+
+.expense-input-desc:focus {
+  outline: none;
+  border-color: #EF9696;
+}
+
+.expense-input-amount {
+  width: 110px;
+  padding: 11px 14px;
+  border-radius: 12px;
+  border: 2px solid var(--bg-footer);
+  background: #fff;
+  color: var(--text-timer);
+  font-size: 0.9rem;
+  font-weight: 700;
+  transition: border-color 0.2s;
+}
+
+.expense-input-amount:focus {
+  outline: none;
+  border-color: #EF9696;
+}
+
+.expense-select {
+  flex: 1;
+  padding: 11px 14px;
+  border-radius: 12px;
+  border: 2px solid var(--bg-footer);
+  background: #fff;
+  color: var(--text-timer);
+  font-size: 0.88rem;
+  font-weight: 600;
+  transition: border-color 0.2s;
+  cursor: pointer;
+}
+
+.expense-select:focus {
+  outline: none;
+  border-color: #EF9696;
+}
+
+.expense-add-btn {
+  width: auto;
+  padding: 11px 22px;
+  flex-shrink: 0;
+  font-size: 0.88rem;
+}
+
+/* Expense list */
+.expense-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.expense-item {
+  background: #fff;
+  border: 2px solid var(--bg-footer);
+  border-radius: 16px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: transform 0.18s, box-shadow 0.18s;
+  animation: slideUp 0.35s cubic-bezier(0.16,1,0.3,1);
+}
+
+.expense-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.07);
+}
+
+.expense-category-badge {
+  background: var(--bg-footer);
+  color: var(--text-footer);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.expense-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.expense-desc {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-timer);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.expense-date {
+  font-size: 0.75rem;
+  color: var(--text-footer);
+}
+
+.expense-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.expense-amount {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #EF9696;
+  letter-spacing: -0.01em;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .money-view {
+    padding: 20px 16px;
+  }
+  .money-total {
+    font-size: 2.6rem;
+  }
+}
+
+@media (max-width: 540px) {
+  .money-view {
+    padding: 18px 14px;
+    gap: 16px;
+  }
+  .money-summary-card {
+    padding: 22px 20px;
+  }
+  .money-total {
+    font-size: 2.2rem;
+  }
+  .money-card {
+    padding: 18px;
+  }
+  .expense-form-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .expense-input-amount {
+    width: 100%;
+  }
+  .expense-add-btn {
+    width: 100%;
+  }
+  .expense-item {
+    padding: 12px 14px;
+    gap: 10px;
+  }
+  .expense-category-badge {
+    display: none;
+  }
+}

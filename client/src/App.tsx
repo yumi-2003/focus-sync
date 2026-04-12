@@ -6,12 +6,13 @@ import { useTimer, type TimerMode } from "./context/TimerContext";
 import { loginUser, registerUser } from "./services/auth";
 import { createSession, fetchSessions, type HistorySession } from "./services/session";
 import { fetchTodos, createTodo, updateTodoStatus, deleteTodo } from "./services/todo";
+import { fetchExpenses, createExpense, deleteExpense } from "./services/expense";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
-import { type Mood, type Todo } from "./types";
+import { type Mood, type Todo, type Expense } from "./types";
 
 type AuthMode = "login" | "register";
-type AppView = "timer" | "history" | "settings" | "journal" | "tasks";
+type AppView = "timer" | "history" | "settings" | "journal" | "tasks" | "money";
 
 interface FormState {
   email: string;
@@ -127,6 +128,14 @@ export default function App() {
   const [newTodo, setNewTodo] = useState("");
   const [isAddingTodo, setIsAddingTodo] = useState(false);
 
+  // --- Expenses ---
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [expensesLoading, setExpensesLoading] = useState(false);
+  const [newExpenseDesc, setNewExpenseDesc] = useState("");
+  const [newExpenseAmount, setNewExpenseAmount] = useState("");
+  const [newExpenseCategory, setNewExpenseCategory] = useState("General");
+  const [isAddingExpense, setIsAddingExpense] = useState(false);
+
   // --- Settings ---
   const [draftSettings, setDraftSettings] = useState(settings);
 
@@ -148,6 +157,7 @@ export default function App() {
     if (user && token) {
       loadHistory();
       loadTodos();
+      loadExpenses();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, token]);
@@ -176,6 +186,52 @@ export default function App() {
       console.error(err);
     } finally {
       setTodosLoading(false);
+    }
+  };
+
+  const loadExpenses = async () => {
+    if (!token) return;
+    setExpensesLoading(true);
+    try {
+      const data = await fetchExpenses(token);
+      setExpenses(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setExpensesLoading(false);
+    }
+  };
+
+  const handleAddExpense = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newExpenseDesc.trim() || !newExpenseAmount || !token) return;
+    setIsAddingExpense(true);
+    try {
+      const saved = await createExpense(
+        { description: newExpenseDesc, amount: parseFloat(newExpenseAmount), category: newExpenseCategory },
+        token
+      );
+      setExpenses(prev => [saved, ...prev]);
+      setNewExpenseDesc("");
+      setNewExpenseAmount("");
+      setNewExpenseCategory("General");
+    } catch (err) {
+      alert("Failed to add expense");
+    } finally {
+      setIsAddingExpense(false);
+    }
+  };
+
+  const handleDeleteExpense = async (id: string) => {
+    if (!token) return;
+    if (!confirm("Delete this expense?")) return;
+    const old = [...expenses];
+    setExpenses(prev => prev.filter(e => e._id !== id));
+    try {
+      await deleteExpense(id, token);
+    } catch (err) {
+      setExpenses(old);
+      alert("Failed to delete expense");
     }
   };
 
@@ -552,6 +608,7 @@ export default function App() {
           <button className={view === "timer" ? "nav-btn active" : "nav-btn"} onClick={() => setView("timer")}>⏱ Timer</button>
           <button className={view === "tasks" ? "nav-btn active" : "nav-btn"} onClick={() => { setView("tasks"); loadTodos(); }}>✅ Tasks</button>
           <button className={view === "journal" ? "nav-btn active" : "nav-btn"} onClick={() => setView("journal")}>✍️ Journal</button>
+          <button className={view === "money" ? "nav-btn active" : "nav-btn"} onClick={() => { setView("money"); loadExpenses(); }}>💸 Money</button>
           <button className={view === "history" ? "nav-btn active" : "nav-btn"} onClick={() => { setView("history"); loadHistory(); }}>📚 History</button>
           <button className={view === "settings" ? "nav-btn active" : "nav-btn"} onClick={() => setView("settings")}>⚙️ Settings</button>
           <button className="nav-btn logout-btn" onClick={logout} title="Logout">👋</button>
@@ -763,6 +820,106 @@ export default function App() {
                   <div className="history-focus">Focus: {s.focusLevel}/10</div>
                   {s.distractions && <div className="history-distractions">🔔 {s.distractions}</div>}
                   {s.journal && <div className="history-journal">📝 {s.journal}</div>}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ════════════════ MONEY VIEW ════════════════ */}
+      {view === "money" && (
+        <section className="money-view">
+          <h2 className="section-title">💸 Spent Money Tracker</h2>
+
+          {/* Summary card */}
+          <div className="money-summary-card">
+            <div className="money-summary-label">Total Spent</div>
+            <div className="money-total">
+              ${expenses.reduce((sum, e) => sum + e.amount, 0).toFixed(2)}
+            </div>
+            <div className="money-count">{expenses.length} expense{expenses.length !== 1 ? "s" : ""} recorded</div>
+          </div>
+
+          {/* Add expense form */}
+          <div className="money-card">
+            <p className="money-sub">Record a new expense</p>
+            <form className="add-expense-form" onSubmit={handleAddExpense}>
+              <div className="expense-form-row">
+                <input
+                  type="text"
+                  placeholder="Description (e.g. Coffee)"
+                  value={newExpenseDesc}
+                  onChange={e => setNewExpenseDesc(e.target.value)}
+                  disabled={isAddingExpense}
+                  className="expense-input-desc"
+                />
+                <input
+                  type="number"
+                  placeholder="Amount"
+                  min="0"
+                  step="0.01"
+                  value={newExpenseAmount}
+                  onChange={e => setNewExpenseAmount(e.target.value)}
+                  disabled={isAddingExpense}
+                  className="expense-input-amount"
+                />
+              </div>
+              <div className="expense-form-row">
+                <select
+                  value={newExpenseCategory}
+                  onChange={e => setNewExpenseCategory(e.target.value)}
+                  disabled={isAddingExpense}
+                  className="expense-select"
+                >
+                  <option value="General">🗂 General</option>
+                  <option value="Food">🍔 Food</option>
+                  <option value="Transport">🚌 Transport</option>
+                  <option value="Entertainment">🎮 Entertainment</option>
+                  <option value="Shopping">🛍 Shopping</option>
+                  <option value="Health">💊 Health</option>
+                  <option value="Education">📚 Education</option>
+                  <option value="Subscriptions">📱 Subscriptions</option>
+                  <option value="Other">📦 Other</option>
+                </select>
+                <button
+                  type="submit"
+                  className="primary-button expense-add-btn"
+                  disabled={isAddingExpense || !newExpenseDesc.trim() || !newExpenseAmount}
+                >
+                  {isAddingExpense ? "…" : "+ Add"}
+                </button>
+              </div>
+            </form>
+          </div>
+
+          {/* Expense list */}
+          <div className="expense-list">
+            {expensesLoading && <p className="history-empty">Loading expenses…</p>}
+            {!expensesLoading && expenses.length === 0 && (
+              <div className="history-empty">
+                <p>No expenses yet!</p>
+                <p>Start tracking where your money goes.</p>
+              </div>
+            )}
+            {expenses.map(exp => (
+              <div key={exp._id} className="expense-item">
+                <div className="expense-category-badge">{exp.category}</div>
+                <div className="expense-details">
+                  <span className="expense-desc">{exp.description}</span>
+                  <span className="expense-date">
+                    {new Date(exp.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                  </span>
+                </div>
+                <div className="expense-right">
+                  <span className="expense-amount">${exp.amount.toFixed(2)}</span>
+                  <button
+                    className="delete-task-btn"
+                    onClick={() => handleDeleteExpense(exp._id)}
+                    title="Delete expense"
+                  >
+                    🗑️
+                  </button>
                 </div>
               </div>
             ))}

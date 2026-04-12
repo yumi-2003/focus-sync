@@ -23,3 +23,12 @@ export interface Todo {
   completed: boolean;
   createdAt: string;
 }
+
+export interface Expense {
+  _id: string;
+  userId: string;
+  description: string;
+  amount: number;
+  category: string;
+  date: string;
+}
