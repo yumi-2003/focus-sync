@@ -4,7 +4,7 @@ import EmojiPicker, { type EmojiClickData } from "emoji-picker-react";
 import { useAuth } from "./context/AuthContext";
 import { useTimer, type TimerMode } from "./context/TimerContext";
 import { loginUser, registerUser } from "./services/auth";
-import { createSession, fetchSessions, type HistorySession } from "./services/session";
+import { createSession, fetchSessions } from "./services/session";
 import { fetchTodos, createTodo, updateTodoStatus, deleteTodo } from "./services/todo";
 import { fetchExpenses, createExpense, deleteExpense } from "./services/expense";
 import LoginPage from "./pages/LoginPage";
@@ -21,6 +21,62 @@ interface FormState {
 }
 
 const initialFormState: FormState = { email: "", password: "", confirmPassword: "" };
+
+// ── Currency catalogue ─────────────────────────────────────────────
+export interface CurrencyOption {
+  code: string;
+  symbol: string;
+  name: string;
+}
+
+const CURRENCIES: CurrencyOption[] = [
+  { code: "USD", symbol: "$",   name: "US Dollar" },
+  { code: "EUR", symbol: "€",   name: "Euro" },
+  { code: "GBP", symbol: "£",   name: "British Pound" },
+  { code: "JPY", symbol: "¥",   name: "Japanese Yen" },
+  { code: "CNY", symbol: "¥",   name: "Chinese Yuan" },
+  { code: "KRW", symbol: "₩",   name: "South Korean Won" },
+  { code: "MMK", symbol: "K",   name: "Myanmar Kyat" },
+  { code: "THB", symbol: "฿",   name: "Thai Baht" },
+  { code: "SGD", symbol: "S$",  name: "Singapore Dollar" },
+  { code: "MYR", symbol: "RM",  name: "Malaysian Ringgit" },
+  { code: "INR", symbol: "₹",   name: "Indian Rupee" },
+  { code: "IDR", symbol: "Rp",  name: "Indonesian Rupiah" },
+  { code: "PHP", symbol: "₱",   name: "Philippine Peso" },
+  { code: "VND", symbol: "₫",   name: "Vietnamese Dong" },
+  { code: "KHR", symbol: "៛",   name: "Cambodian Riel" },
+  { code: "LAK", symbol: "₭",   name: "Lao Kip" },
+  { code: "BND", symbol: "B$",  name: "Brunei Dollar" },
+  { code: "AUD", symbol: "A$",  name: "Australian Dollar" },
+  { code: "CAD", symbol: "CA$", name: "Canadian Dollar" },
+  { code: "HKD", symbol: "HK$", name: "Hong Kong Dollar" },
+  { code: "TWD", symbol: "NT$", name: "Taiwan Dollar" },
+  { code: "BDT", symbol: "৳",   name: "Bangladeshi Taka" },
+  { code: "PKR", symbol: "₨",   name: "Pakistani Rupee" },
+  { code: "LKR", symbol: "Rs",  name: "Sri Lankan Rupee" },
+  { code: "NPR", symbol: "Rs",  name: "Nepalese Rupee" },
+  { code: "AED", symbol: "د.إ", name: "UAE Dirham" },
+  { code: "SAR", symbol: "﷼",  name: "Saudi Riyal" },
+  { code: "TRY", symbol: "₺",   name: "Turkish Lira" },
+  { code: "RUB", symbol: "₽",   name: "Russian Ruble" },
+  { code: "BRL", symbol: "R$",  name: "Brazilian Real" },
+  { code: "MXN", symbol: "$",   name: "Mexican Peso" },
+  { code: "ZAR", symbol: "R",   name: "South African Rand" },
+  { code: "NGN", symbol: "₦",   name: "Nigerian Naira" },
+  { code: "CUSTOM", symbol: "?", name: "Custom Currency" },
+];
+
+const DEFAULT_CURRENCY = CURRENCIES[0]; // USD
+
+function loadCurrency(): CurrencyOption {
+  try {
+    const raw = localStorage.getItem("fs_currency");
+    if (!raw) return DEFAULT_CURRENCY;
+    const parsed = JSON.parse(raw) as CurrencyOption;
+    if (parsed.code && parsed.symbol && parsed.name) return parsed;
+  } catch { /* ignore */ }
+  return DEFAULT_CURRENCY;
+}
 
 const MOOD_EMOJIS: Record<string, string> = {
   happy: "😊",
@@ -78,7 +134,7 @@ const SERVER = import.meta.env.VITE_API_URL?.replace("/api", "") ?? "http://loca
 
 export default function App() {
   const { user, token, login, logout } = useAuth();
-  const { mode, settings, isRunning, displayMs, sessionStartTime, elapsedTotal,
+  const { mode, settings, isRunning, displayMs, sessionStartTime,
     setMode, updateSettings, startTimer, stopTimer, resetTimer, requestNotificationPermission } = useTimer();
 
   // --- Auth state ---
@@ -135,6 +191,45 @@ export default function App() {
   const [newExpenseAmount, setNewExpenseAmount] = useState("");
   const [newExpenseCategory, setNewExpenseCategory] = useState("General");
   const [isAddingExpense, setIsAddingExpense] = useState(false);
+
+  // --- Currency ---
+  const [currency, setCurrency] = useState<CurrencyOption>(loadCurrency);
+  const [customCurrencyCode, setCustomCurrencyCode] = useState("");
+  const [customCurrencySymbol, setCustomCurrencySymbol] = useState("");
+  const [currencySaved, setCurrencySaved] = useState(false);
+
+  const activeCurrencySymbol = currency.symbol;
+
+  const handleCurrencySelect = (code: string) => {
+    if (code === "CUSTOM") {
+      // switch to custom mode, keep existing custom values
+      const customEntry: CurrencyOption = {
+        code: "CUSTOM",
+        symbol: customCurrencySymbol || "?",
+        name: "Custom Currency",
+      };
+      setCurrency(customEntry);
+    } else {
+      const found = CURRENCIES.find(c => c.code === code) ?? DEFAULT_CURRENCY;
+      setCurrency(found);
+      localStorage.setItem("fs_currency", JSON.stringify(found));
+      setCurrencySaved(true);
+      setTimeout(() => setCurrencySaved(false), 2000);
+    }
+  };
+
+  const handleSaveCustomCurrency = () => {
+    if (!customCurrencyCode.trim() || !customCurrencySymbol.trim()) return;
+    const customEntry: CurrencyOption = {
+      code: customCurrencyCode.trim().toUpperCase(),
+      symbol: customCurrencySymbol.trim(),
+      name: `Custom (${customCurrencyCode.trim().toUpperCase()})`,
+    };
+    setCurrency(customEntry);
+    localStorage.setItem("fs_currency", JSON.stringify(customEntry));
+    setCurrencySaved(true);
+    setTimeout(() => setCurrencySaved(false), 2000);
+  };
 
   // --- Settings ---
   const [draftSettings, setDraftSettings] = useState(settings);
@@ -836,9 +931,11 @@ export default function App() {
           <div className="money-summary-card">
             <div className="money-summary-label">Total Spent</div>
             <div className="money-total">
-              ${expenses.reduce((sum, e) => sum + e.amount, 0).toFixed(2)}
+              {activeCurrencySymbol}{expenses.reduce((sum, e) => sum + e.amount, 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
-            <div className="money-count">{expenses.length} expense{expenses.length !== 1 ? "s" : ""} recorded</div>
+            <div className="money-count">
+              {expenses.length} expense{expenses.length !== 1 ? "s" : ""} · {currency.code}
+            </div>
           </div>
 
           {/* Add expense form */}
@@ -912,7 +1009,7 @@ export default function App() {
                   </span>
                 </div>
                 <div className="expense-right">
-                  <span className="expense-amount">${exp.amount.toFixed(2)}</span>
+                  <span className="expense-amount">{activeCurrencySymbol}{exp.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                   <button
                     className="delete-task-btn"
                     onClick={() => handleDeleteExpense(exp._id)}
@@ -930,8 +1027,11 @@ export default function App() {
       {/* ════════════════ SETTINGS VIEW ════════════════ */}
       {view === "settings" && (
         <section className="settings-view">
-          <h2 className="section-title">⚙️ Timer Settings</h2>
+          <h2 className="section-title">⚙️ Settings</h2>
+
+          {/* Timer card */}
           <div className="settings-card">
+            <p className="settings-sub-title">⏱ Timer Durations</p>
             <p className="settings-info">Customize your Pomodoro durations (in minutes).</p>
 
             <div className="settings-fields">
@@ -980,6 +1080,72 @@ export default function App() {
                 🔔 Enable Desktop Notifications
               </button>
             </div>
+          </div>
+
+          {/* Currency card */}
+          <div className="settings-card currency-card">
+            <p className="settings-sub-title">💱 Currency</p>
+            <p className="settings-info">
+              Choose the currency shown in the Money Tracker.
+              Currently: <strong>{currency.code}</strong> ({currency.symbol})
+            </p>
+
+            {/* Grid of currency chips */}
+            <div className="currency-grid">
+              {CURRENCIES.filter(c => c.code !== "CUSTOM").map(c => (
+                <button
+                  key={c.code}
+                  id={`currency-${c.code}`}
+                  className={`currency-chip ${currency.code === c.code ? "active" : ""}`}
+                  onClick={() => handleCurrencySelect(c.code)}
+                  title={c.name}
+                >
+                  <span className="chip-symbol">{c.symbol}</span>
+                  <span className="chip-code">{c.code}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Divider */}
+            <div className="currency-divider">
+              <span>or enter a custom currency</span>
+            </div>
+
+            {/* Custom currency inputs */}
+            <div className="custom-currency-row">
+              <input
+                id="custom-currency-code"
+                type="text"
+                className="custom-currency-input"
+                placeholder="Code (e.g. MMK)"
+                maxLength={6}
+                value={customCurrencyCode}
+                onChange={e => setCustomCurrencyCode(e.target.value.toUpperCase())}
+                onFocus={() => setCurrency(prev => ({ ...prev, code: "CUSTOM" }))}
+              />
+              <input
+                id="custom-currency-symbol"
+                type="text"
+                className="custom-currency-input"
+                placeholder="Symbol (e.g. K)"
+                maxLength={5}
+                value={customCurrencySymbol}
+                onChange={e => setCustomCurrencySymbol(e.target.value)}
+                onFocus={() => setCurrency(prev => ({ ...prev, code: "CUSTOM" }))}
+              />
+              <button
+                id="save-custom-currency-btn"
+                className="primary-button currency-save-btn"
+                onClick={handleSaveCustomCurrency}
+                disabled={!customCurrencyCode.trim() || !customCurrencySymbol.trim()}
+              >
+                Save
+              </button>
+            </div>
+
+            {currencySaved && (
+              <div className="currency-saved-toast">✅ Currency saved!</div>
+            )}
           </div>
         </section>
       )}
