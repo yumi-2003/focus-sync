@@ -1,5 +1,6 @@
 import { type ChangeEvent, type FormEvent, useState, useEffect, useRef } from "react";
 import "./App.css";
+import toast, { Toaster } from "react-hot-toast";
 import EmojiPicker, { type EmojiClickData } from "emoji-picker-react";
 import { useAuth } from "./context/AuthContext";
 import { useTimer, type TimerMode } from "./context/TimerContext";
@@ -311,7 +312,7 @@ export default function App() {
       setNewExpenseAmount("");
       setNewExpenseCategory("General");
     } catch (err) {
-      alert("Failed to add expense");
+      toast.error("Failed to add expense");
     } finally {
       setIsAddingExpense(false);
     }
@@ -319,14 +320,15 @@ export default function App() {
 
   const handleDeleteExpense = async (id: string) => {
     if (!token) return;
-    if (!confirm("Delete this expense?")) return;
+    const confirmed = await confirmToast("Delete this expense?");
+    if (!confirmed) return;
     const old = [...expenses];
     setExpenses(prev => prev.filter(e => e._id !== id));
     try {
       await deleteExpense(id, token);
     } catch (err) {
       setExpenses(old);
-      alert("Failed to delete expense");
+      toast.error("Failed to delete expense");
     }
   };
 
@@ -339,7 +341,7 @@ export default function App() {
       setTodos(prev => [saved, ...prev]);
       setNewTodo("");
     } catch (err) {
-      alert("Failed to add task");
+      toast.error("Failed to add task");
     } finally {
       setIsAddingTodo(false);
     }
@@ -354,20 +356,21 @@ export default function App() {
     } catch (err) {
       // Revert if failed
       setTodos(prev => prev.map(t => t._id === id ? { ...t, completed } : t));
-      alert("Failed to update task");
+      toast.error("Failed to update task");
     }
   };
 
   const handleDeleteTodo = async (id: string) => {
     if (!token) return;
-    if (!confirm("Are you sure you want to delete this task?")) return;
+    const confirmed = await confirmToast("Are you sure you want to delete this task?");
+    if (!confirmed) return;
     const oldTodos = [...todos];
     setTodos(prev => prev.filter(t => t._id !== id));
     try {
       await deleteTodo(id, token);
     } catch (err) {
       setTodos(oldTodos);
-      alert("Failed to delete task");
+      toast.error("Failed to delete task");
     }
   };
 
@@ -455,9 +458,9 @@ export default function App() {
       setStandaloneBgImageFile(null);
       setStandaloneBgPreviewUrl(null);
       if (standaloneFileRef.current) standaloneFileRef.current.value = "";
-      alert("Journal entry saved! ✨");
+      toast.success("Journal entry saved! ✨");
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Could not save journal.");
+      toast.error(err instanceof Error ? err.message : "Could not save journal.");
     } finally {
       setIsSavingStandalone(false);
     }
@@ -525,8 +528,34 @@ export default function App() {
 
   const handleEnableNotifications = async () => {
     const granted = await requestNotificationPermission();
-    if (granted) alert("Notifications enabled! 🔔");
-    else alert("Notification permission denied or not supported.");
+    if (granted) toast.success("Notifications enabled! 🔔");
+    else toast.error("Notification permission denied or not supported.");
+  };
+
+  const confirmToast = (message: string) => {
+    return new Promise<boolean>((resolve) => {
+      toast((t) => (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', minWidth: '200px' }}>
+          <p style={{ margin: 0 }}>{message}</p>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button 
+              className="primary-button" 
+              style={{ padding: '6px 12px', fontSize: '0.8rem', width: 'auto' }}
+              onClick={() => { toast.dismiss(t.id); resolve(true); }}
+            >
+              Confirm
+            </button>
+            <button 
+              className="ghost-button" 
+              style={{ padding: '6px 12px', fontSize: '0.8rem', width: 'auto' }}
+              onClick={() => { toast.dismiss(t.id); resolve(false); }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ), { duration: Infinity });
+    });
   };
 
   // ══════════════════════════════════════════════════════════════════
@@ -1154,6 +1183,31 @@ export default function App() {
       <footer className="app-footer">
         <span>MILLI LOFI TIMER</span>
       </footer>
+      <Toaster 
+        position="bottom-center" 
+        toastOptions={{
+          style: {
+            background: '#fff',
+            color: '#333',
+            border: '2px solid var(--bg-footer)',
+            borderRadius: '16px',
+            fontFamily: 'inherit',
+            fontWeight: 600,
+          },
+          success: {
+            iconTheme: {
+              primary: '#96EFB5',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: '#EF9696',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
     </main>
   );
 }
