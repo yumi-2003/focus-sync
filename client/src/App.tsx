@@ -1184,7 +1184,7 @@ export default function App() {
         <span>MILLI LOFI TIMER</span>
       </footer>
       <Toaster 
-        position="bottom-center" 
+        position="top-center" 
         toastOptions={{
           style: {
             background: '#fff',
@@ -1194,6 +1194,7 @@ export default function App() {
             fontFamily: 'inherit',
             fontWeight: 600,
           },
+          className: "custom-toast",
           success: {
             iconTheme: {
               primary: '#96EFB5',
