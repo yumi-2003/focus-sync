@@ -7,6 +7,11 @@
   --text-timer: #5E3A31;
   --text-footer: #A89A8E;
   --mode-color: #EF9696;
+  --nav-btn-hover: rgba(0, 0, 0, 0.05);
+  --bg-card: #ffffff;
+  --bg-overlay: rgba(255, 249, 243, 0.85);
+  --bg-input: #ffffff;
+  --bg-mood-active: #FFF0F0;
 
   font-family: 'Quicksand', "Varela Round", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: var(--text-timer);
@@ -15,6 +20,21 @@
   -webkit-font-smoothing: antialiased;
   line-height: 1.5;
   font-weight: 600;
+
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.dark {
+  --bg-main: #2D2424;
+  --bg-footer: #1E1A1A;
+  --text-header: #FFB4B4;
+  --text-timer: #F3E7D9;
+  --text-footer: #8E8071;
+  --nav-btn-hover: rgba(255, 255, 255, 0.1);
+  --bg-card: #3D3232;
+  --bg-overlay: rgba(45, 36, 36, 0.85);
+  --bg-input: #3D3232;
+  --bg-mood-active: #4D3D3D;
 }
 
 * { box-sizing: border-box; }

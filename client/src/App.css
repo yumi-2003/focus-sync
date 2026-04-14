@@ -172,7 +172,7 @@
 .completion-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(255,249,243,0.85);
+  background: var(--bg-overlay);
   backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
@@ -182,7 +182,7 @@
 }
 
 .completion-card {
-  background: #fff;
+  background: var(--bg-card);
   border-radius: 28px;
   padding: 36px 32px;
   text-align: center;
@@ -210,7 +210,7 @@
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(255,249,243,0.82);
+  background: var(--bg-overlay);
   backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
@@ -222,7 +222,7 @@
 }
 
 .modal-content {
-  background: #fff;
+  background: var(--bg-card);
   border-radius: 28px;
   padding: 32px 28px;
   width: min(460px, 100%);
@@ -303,7 +303,7 @@
 .mood-btn.active {
   opacity: 1;
   border-color: var(--text-header);
-  background: #FFF0F0;
+  background: var(--bg-mood-active);
   transform: scale(1.1);
 }
 
@@ -369,7 +369,7 @@
   overflow: hidden;
   min-height: 180px;
   display: flex;
-  background: #fff;
+  background: var(--bg-card);
   border: 2px solid var(--bg-footer);
   transition: transform 0.2s, box-shadow 0.2s;
 }
@@ -384,7 +384,7 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  background: rgba(255,249,243,0.88);
+  background: var(--bg-overlay);
   width: 100%;
 }
 
@@ -418,7 +418,7 @@
 }
 
 .settings-card {
-  background: #fff;
+  background: var(--bg-card);
   border-radius: 24px;
   padding: 28px;
   border: 2px solid var(--bg-footer);
@@ -508,7 +508,7 @@
   padding: 12px 14px;
   border-radius: 12px;
   border: 2px solid var(--bg-footer);
-  background: #fff;
+  background: var(--bg-input);
   color: var(--text-timer);
   transition: border-color 0.2s;
   width: 100%;
@@ -532,7 +532,7 @@
 
 /* Auth panels (login/register pages inherit from LoginPage / RegisterPage components) */
 .auth-panel {
-  background: #fff;
+  background: var(--bg-card);
   border-radius: 28px;
   padding: 36px 32px;
   box-shadow: 0 12px 40px rgba(0,0,0,0.07);

@@ -3,6 +3,7 @@ import "./App.css";
 import toast, { Toaster } from "react-hot-toast";
 import EmojiPicker, { type EmojiClickData } from "emoji-picker-react";
 import { useAuth } from "./context/AuthContext";
+import { useTheme } from "./context/ThemeContext";
 import { useTimer, type TimerMode } from "./context/TimerContext";
 import { loginUser, registerUser } from "./services/auth";
 import { createSession, fetchSessions } from "./services/session";
@@ -135,6 +136,7 @@ const SERVER = import.meta.env.VITE_API_URL?.replace("/api", "") ?? "http://loca
 
 export default function App() {
   const { user, token, login, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const { mode, settings, isRunning, displayMs, sessionStartTime,
     setMode, updateSettings, startTimer, stopTimer, resetTimer, requestNotificationPermission } = useTimer();
 
@@ -709,7 +711,7 @@ export default function App() {
                 {showEmojiPicker && (
                   <div className="emoji-picker-popover">
                     <div className="emoji-picker-backdrop" onClick={() => setShowEmojiPicker(false)} />
-                    <EmojiPicker onEmojiClick={onEmojiClick} />
+                    <EmojiPicker onEmojiClick={onEmojiClick} theme={theme as any} />
                   </div>
                 )}
               </div>
@@ -735,6 +737,7 @@ export default function App() {
           <button className={view === "money" ? "nav-btn active" : "nav-btn"} onClick={() => { setView("money"); loadExpenses(); }}>💸 Money</button>
           <button className={view === "history" ? "nav-btn active" : "nav-btn"} onClick={() => { setView("history"); loadHistory(); }}>📚 History</button>
           <button className={view === "settings" ? "nav-btn active" : "nav-btn"} onClick={() => setView("settings")}>⚙️ Settings</button>
+          <button className="nav-btn" onClick={toggleTheme} title="Toggle Theme">{theme === "light" ? "🌙" : "☀️"}</button>
           <button className="nav-btn logout-btn" onClick={logout} title="Logout">👋</button>
         </div>
       </nav>
@@ -869,7 +872,7 @@ export default function App() {
                 {showStandaloneEmoji && (
                   <div className="emoji-picker-popover standalone-picker">
                     <div className="emoji-picker-backdrop" onClick={() => setShowStandaloneEmoji(false)} />
-                    <EmojiPicker onEmojiClick={onStandaloneEmojiClick} />
+                    <EmojiPicker onEmojiClick={onStandaloneEmojiClick} theme={theme as any} />
                   </div>
                 )}
               </div>
@@ -1187,8 +1190,8 @@ export default function App() {
         position="top-center" 
         toastOptions={{
           style: {
-            background: '#fff',
-            color: '#333',
+            background: 'var(--bg-card)',
+            color: 'var(--text-timer)',
             border: '2px solid var(--bg-footer)',
             borderRadius: '16px',
             fontFamily: 'inherit',
@@ -1198,13 +1201,13 @@ export default function App() {
           success: {
             iconTheme: {
               primary: '#96EFB5',
-              secondary: '#fff',
+              secondary: 'var(--bg-card)',
             },
           },
           error: {
             iconTheme: {
               primary: '#EF9696',
-              secondary: '#fff',
+              secondary: 'var(--bg-card)',
             },
           },
         }}
