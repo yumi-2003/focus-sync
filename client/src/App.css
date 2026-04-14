@@ -44,7 +44,7 @@
 }
 
 .nav-btn:hover { background: var(--bg-footer); color: var(--text-timer); }
-.nav-btn.active { background: var(--mode-color); color: #fff; }
+.nav-btn.active { background: var(--mode-color); color: var(--text-active); }
 .logout-btn { font-size: 1.1rem; padding: 6px 10px; }
 
 /* ─── Timer View ──────────────────────────────────────────────── */
@@ -76,7 +76,7 @@
 
 .mode-tab.active {
   background: var(--mode-color);
-  color: #fff;
+  color: var(--text-active);
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
@@ -393,7 +393,7 @@
   padding: 3px 10px;
   border-radius: 20px;
   background: var(--mode-color);
-  color: #fff;
+  color: var(--text-active);
   font-size: 0.75rem;
   font-weight: 700;
   width: fit-content;
@@ -563,7 +563,7 @@
 
 .mode-switch button.active {
   background: var(--text-header);
-  color: #fff;
+  color: var(--text-active);
   border-color: transparent;
 }
 
@@ -573,7 +573,7 @@
   padding: 13px 20px;
   border-radius: 14px;
   background: var(--text-header);
-  color: #fff;
+  color: var(--text-active);
   font-weight: 700;
   font-size: 0.95rem;
   border: none;
@@ -602,6 +602,11 @@
 .ghost-button:disabled { opacity: 0.55; cursor: not-allowed; }
 
 .button-row { display: flex; gap: 12px; }
+
+/* Mode Overrides */
+.mode-focus { --mode-color: var(--focus-color); }
+.mode-shortBreak { --mode-color: var(--short-color); }
+.mode-longBreak { --mode-color: var(--long-color); }
 
 /* ─── Tap Feedback ─────────────────────────────────────────── */
 .nav-btn:active, .ctrl-btn:active, .primary-button:active, .ghost-button:active, .mode-tab:active, .num-btn:active {
@@ -1034,7 +1039,7 @@
   color: var(--text-timer);
   line-height: 1.4;
   margin-top: 4px;
-  background: rgba(255, 255, 255, 0.5);
+  background: var(--bg-overlay);
   padding: 8px;
   border-radius: 8px;
   font-style: italic;
@@ -1052,7 +1057,7 @@
 }
 
 .journal-card {
-  background: #fff;
+  background: var(--bg-card);
   border-radius: 28px;
   padding: 32px;
   border: 2px solid var(--bg-footer);
@@ -1102,7 +1107,7 @@
 }
 
 .tasks-card {
-  background: #fff;
+  background: var(--bg-card);
   border-radius: 24px;
   padding: 28px;
   border: 2px solid var(--bg-footer);
@@ -1160,7 +1165,7 @@
 }
 
 .todo-item:hover {
-  background: #fff;
+  background: var(--bg-item-hover);
   border-color: var(--bg-footer);
   transform: translateX(4px);
 }
@@ -1209,7 +1214,7 @@
 
 .delete-task-btn:hover {
   opacity: 1;
-  background: #ffe3e3;
+  background: var(--bg-danger);
 }
 
 @media (max-width: 540px) {
@@ -1241,7 +1246,7 @@
 
 /* Summary card */
 .money-summary-card {
-  background: linear-gradient(135deg, #EF9696 0%, #f5b8b8 100%);
+  background: var(--bg-summary);
   border-radius: 24px;
   padding: 28px 32px;
   display: flex;
@@ -1255,7 +1260,8 @@
 .money-summary-label {
   font-size: 0.85rem;
   font-weight: 700;
-  color: rgba(255,255,255,0.85);
+  color: var(--text-on-summary);
+  opacity: 0.85;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
@@ -1263,7 +1269,7 @@
 .money-total {
   font-size: 3.2rem;
   font-weight: 800;
-  color: #fff;
+  color: var(--text-on-summary);
   line-height: 1.1;
   letter-spacing: -0.02em;
   text-shadow: 0 2px 10px rgba(0,0,0,0.12);
@@ -1271,13 +1277,14 @@
 
 .money-count {
   font-size: 0.82rem;
-  color: rgba(255,255,255,0.78);
+  color: var(--text-on-summary);
+  opacity: 0.78;
   font-weight: 500;
 }
 
 /* Add form card */
 .money-card {
-  background: #fff;
+  background: var(--bg-card);
   border-radius: 20px;
   padding: 24px;
   border: 2px solid var(--bg-footer);
@@ -1311,7 +1318,7 @@
   padding: 11px 14px;
   border-radius: 12px;
   border: 2px solid var(--bg-footer);
-  background: #fff;
+  background: var(--bg-input);
   color: var(--text-timer);
   font-size: 0.9rem;
   transition: border-color 0.2s;
@@ -1327,7 +1334,7 @@
   padding: 11px 14px;
   border-radius: 12px;
   border: 2px solid var(--bg-footer);
-  background: #fff;
+  background: var(--bg-input);
   color: var(--text-timer);
   font-size: 0.9rem;
   font-weight: 700;
@@ -1344,7 +1351,7 @@
   padding: 11px 14px;
   border-radius: 12px;
   border: 2px solid var(--bg-footer);
-  background: #fff;
+  background: var(--bg-input);
   color: var(--text-timer);
   font-size: 0.88rem;
   font-weight: 600;
@@ -1372,7 +1379,7 @@
 }
 
 .expense-item {
-  background: #fff;
+  background: var(--bg-card);
   border: 2px solid var(--bg-footer);
   border-radius: 16px;
   padding: 14px 18px;
@@ -1431,7 +1438,7 @@
 .expense-amount {
   font-size: 1.1rem;
   font-weight: 800;
-  color: #EF9696;
+  color: var(--text-header);
   letter-spacing: -0.01em;
 }
 
@@ -1513,15 +1520,15 @@
 }
 
 .currency-chip:hover {
-  border-color: #EF9696;
-  background: #fff7f7;
+  border-color: var(--text-header);
+  background: var(--bg-chip-hover);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(239, 150, 150, 0.18);
 }
 
 .currency-chip.active {
-  border-color: #EF9696;
-  background: #ffeaea;
+  border-color: var(--text-header);
+  background: var(--bg-chip-active);
   box-shadow: 0 4px 16px rgba(239, 150, 150, 0.3);
   transform: translateY(-2px);
 }
@@ -1574,7 +1581,7 @@
   padding: 11px 14px;
   border-radius: 12px;
   border: 2px solid var(--bg-footer);
-  background: #fff;
+  background: var(--bg-input);
   color: var(--text-timer);
   font-size: 0.9rem;
   font-weight: 600;
@@ -1596,14 +1603,14 @@
 
 .currency-saved-toast {
   padding: 10px 14px;
-  background: #e6fff0;
-  color: #1a7a44;
+  background: var(--bg-success);
+  color: var(--text-success);
   border-radius: 12px;
   font-size: 0.88rem;
   font-weight: 700;
   text-align: center;
-  animation: slideUp 0.3s ease;
-  border: 1.5px solid #b2f0cc;
+  animation: fadeIn 0.3s ease;
+  border: 1.5px solid var(--bg-footer);
 }
 
 @media (max-width: 540px) {

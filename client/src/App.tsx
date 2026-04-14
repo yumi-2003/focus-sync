@@ -94,11 +94,7 @@ const MODE_LABELS: Record<TimerMode, string> = {
   longBreak: "Long Break",
 };
 
-const MODE_COLORS: Record<TimerMode, string> = {
-  focus: "#EF9696",
-  shortBreak: "#96C5EF",
-  longBreak: "#96EFB5",
-};
+// MODE_COLORS moved to CSS variables (--focus-color, --short-color, --long-color)
 
 // Completion images provided by user — map to each mode
 const COMPLETION_IMAGES: Record<TimerMode, string[]> = {
@@ -583,12 +579,12 @@ export default function App() {
   }
 
   // ══════════════════════════════════════════════════════════════════
-  //  LOGGED IN
+  // LOGGED IN
   // ══════════════════════════════════════════════════════════════════
-  const modeColor = MODE_COLORS[mode];
+  const modeClass = (view === "timer") ? `mode-${mode}` : "mode-focus";
 
   return (
-    <main className="app-shell" style={{ "--mode-color": modeColor } as React.CSSProperties}>
+    <main className={`app-shell ${modeClass}`}>
 
       {/* ── Completion Overlay ─────────────────────────────────────── */}
       {showCompletion && (
