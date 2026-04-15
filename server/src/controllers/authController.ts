@@ -13,6 +13,7 @@ const createAuthResponse = (user: IUser) => {
     token,
     user: {
       _id: userId,
+      username: user.username,
       email: user.email,
     },
   };
@@ -20,11 +21,12 @@ const createAuthResponse = (user: IUser) => {
 
 export const register = async (req: Request, res: Response) => {
   try {
+    const username = req.body.username?.trim();
     const email = req.body.email?.trim().toLowerCase();
     const password = req.body.password;
 
-    if (!email || !password) {
-      return res.status(400).json({ msg: "Email and password are required" });
+    if (!username || !email || !password) {
+      return res.status(400).json({ msg: "Username, email, and password are required" });
     }
 
     if (password.length < 6) {
@@ -40,7 +42,7 @@ export const register = async (req: Request, res: Response) => {
     }
 
     const hashed = await bcrypt.hash(password, 10);
-    const user = await User.create({ email, password: hashed });
+    const user = await User.create({ username, email, password: hashed });
 
     return res.status(201).json(createAuthResponse(user));
   } catch (error) {

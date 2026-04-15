@@ -2,6 +2,7 @@ import { type ChangeEvent, type FormEvent } from "react";
 
 interface RegisterPageProps {
   form: {
+    username: string;
     email: string;
     password: string;
     confirmPassword: string;
@@ -47,6 +48,19 @@ function RegisterPage({
           </div>
 
           <form className="auth-form" onSubmit={onSubmit}>
+            <label className="field">
+              <span>Username</span>
+              <input
+                type="text"
+                name="username"
+                value={form.username}
+                onChange={onChange}
+                placeholder="Choose a username"
+                autoComplete="username"
+                required
+              />
+            </label>
+
             <label className="field">
               <span>Email</span>
               <input

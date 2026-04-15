@@ -14,15 +14,16 @@ import RegisterPage from "./pages/RegisterPage";
 import { type Mood, type Todo, type Expense } from "./types";
 
 type AuthMode = "login" | "register";
-type AppView = "timer" | "history" | "settings" | "journal" | "tasks" | "money";
+type AppView = "timer" | "history" | "settings" | "journal" | "tasks" | "money" | "profile";
 
 interface FormState {
+  username: string;
   email: string;
   password: string;
   confirmPassword: string;
 }
 
-const initialFormState: FormState = { email: "", password: "", confirmPassword: "" };
+const initialFormState: FormState = { username: "", email: "", password: "", confirmPassword: "" };
 
 // ── Currency catalogue ─────────────────────────────────────────────
 export interface CurrencyOption {
@@ -394,7 +395,7 @@ export default function App() {
     if (form.password !== form.confirmPassword) { setAuthError("Passwords do not match."); return; }
     setIsSubmitting(true);
     try {
-      const r = await registerUser({ email: form.email, password: form.password });
+      const r = await registerUser({ username: form.username, email: form.email, password: form.password });
       login(r.user, r.token);
       setForm(initialFormState);
     } catch (err) {
@@ -732,6 +733,7 @@ export default function App() {
           <button className={view === "journal" ? "nav-btn active" : "nav-btn"} onClick={() => setView("journal")}>✍️ Journal</button>
           <button className={view === "money" ? "nav-btn active" : "nav-btn"} onClick={() => { setView("money"); loadExpenses(); }}>💸 Money</button>
           <button className={view === "history" ? "nav-btn active" : "nav-btn"} onClick={() => { setView("history"); loadHistory(); }}>📚 History</button>
+          <button className={view === "profile" ? "nav-btn active" : "nav-btn"} onClick={() => setView("profile")}>👤 Profile</button>
           <button className={view === "settings" ? "nav-btn active" : "nav-btn"} onClick={() => setView("settings")}>⚙️ Settings</button>
           <button className="nav-btn" onClick={toggleTheme} title="Toggle Theme">{theme === "light" ? "🌙" : "☀️"}</button>
           <button className="nav-btn logout-btn" onClick={logout} title="Logout">👋</button>
@@ -1048,6 +1050,39 @@ export default function App() {
                 </div>
               </div>
             ))}
+          </div>
+        </section>
+      )}
+
+      {/* ════════════════ PROFILE VIEW ════════════════ */}
+      {view === "profile" && (
+        <section className="profile-view">
+          <h2 className="section-title">👤 User Profile</h2>
+          
+          <div className="profile-card">
+            <div className="profile-header">
+              <div className="profile-avatar">
+                {user.username ? user.username.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
+              </div>
+              <div className="profile-info">
+                <h3>{user.username || "Anonymous"}</h3>
+                <p className="profile-email">{user.email}</p>
+              </div>
+            </div>
+            <div className="profile-details">
+              <div className="profile-stat">
+                <span className="stat-label">Tasks</span>
+                <span className="stat-value">{todos.length}</span>
+              </div>
+              <div className="profile-stat">
+                <span className="stat-label">Expenses</span>
+                <span className="stat-value">{expenses.length}</span>
+              </div>
+              <div className="profile-stat">
+                <span className="stat-label">Sessions</span>
+                <span className="stat-value">{history.length}</span>
+              </div>
+            </div>
           </div>
         </section>
       )}

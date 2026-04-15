@@ -8,6 +8,7 @@ export interface AuthResponse {
 }
 
 interface Credentials {
+  username?: string;
   email: string;
   password: string;
 }
