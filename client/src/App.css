@@ -530,6 +530,14 @@
 .message.error { background: #ffe3e3; color: #c0392b; }
 .message.success { background: #e3ffe5; color: #27ae60; }
 
+.field-error {
+  color: #c0392b;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-top: 4px;
+  animation: fadeIn 0.2s ease;
+}
+
 /* Auth panels (login/register pages inherit from LoginPage / RegisterPage components) */
 .auth-panel {
   background: var(--bg-card);
@@ -1751,4 +1759,40 @@
   text-transform: uppercase;
   letter-spacing: 0.1em;
   margin-top: 4px;
+}
+
+/* ─── Password Toggle ─────────────────────────────────────────── */
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 14px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.6;
+  transition: opacity 0.2s, transform 0.1s;
+  color: inherit;
+}
+
+.password-toggle-btn:hover {
+  opacity: 1;
+}
+
+.password-toggle-btn:active {
+  transform: scale(0.9);
+}
+
+.password-input-wrapper input {
+  padding-right: 44px !important;
 }

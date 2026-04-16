@@ -143,6 +143,7 @@ export default function App() {
   const [authError, setAuthError] = useState("");
   const [authSuccess, setAuthSuccess] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   // --- App view ---
   const [view, setView] = useState<AppView>("timer");
@@ -299,11 +300,21 @@ export default function App() {
 
   const handleAddExpense = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newExpenseDesc.trim() || !newExpenseAmount || !token) return;
+    if (!newExpenseDesc.trim()) {
+      toast.error("Please enter an expense description");
+      return;
+    }
+    const amt = parseFloat(newExpenseAmount);
+    if (isNaN(amt) || amt <= 0) {
+      toast.error("Please enter a valid amount greater than zero");
+      return;
+    }
+    if (!token) return;
+
     setIsAddingExpense(true);
     try {
       const saved = await createExpense(
-        { description: newExpenseDesc, amount: parseFloat(newExpenseAmount), category: newExpenseCategory },
+        { description: newExpenseDesc, amount: amt, category: newExpenseCategory },
         token
       );
       setExpenses(prev => [saved, ...prev]);
@@ -333,7 +344,16 @@ export default function App() {
 
   const handleAddTodo = async (e: FormEvent) => {
     e.preventDefault();
-    if (!newTodo.trim() || !token) return;
+    if (!newTodo.trim()) {
+      toast.error("Task text cannot be empty");
+      return;
+    }
+    if (newTodo.length > 100) {
+      toast.error("Task is too long (max 100 characters)");
+      return;
+    }
+    if (!token) return;
+
     setIsAddingTodo(true);
     try {
       const saved = await createTodo(newTodo, token);
@@ -380,26 +400,53 @@ export default function App() {
   };
 
   const handleLoginSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault(); setAuthError(""); setAuthSuccess(""); setIsSubmitting(true);
+    e.preventDefault(); setAuthError(""); setFieldErrors({}); setIsSubmitting(true);
+    
+    // Quick frontend check
+    if (!form.email.includes("@")) {
+      setFieldErrors({ email: "Please enter a valid email" });
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       const r = await loginUser({ email: form.email, password: form.password });
       login(r.user, r.token);
       setForm(initialFormState);
     } catch (err) {
-      setAuthError(err instanceof Error ? err.message : "Something went wrong.");
+      const msg = err instanceof Error ? err.message : "Something went wrong.";
+      if (msg.toLowerCase().includes("email")) setFieldErrors({ email: msg });
+      else if (msg.toLowerCase().includes("password")) setFieldErrors({ password: msg });
+      else setAuthError(msg);
     } finally { setIsSubmitting(false); }
   };
 
   const handleRegisterSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault(); setAuthError(""); setAuthSuccess("");
-    if (form.password !== form.confirmPassword) { setAuthError("Passwords do not match."); return; }
+    e.preventDefault(); setAuthError(""); setFieldErrors({});
+    
+    // Frontend validation
+    const errors: Record<string, string> = {};
+    if (form.username.length < 3) errors.username = "Username too short (min 3)";
+    if (!form.email.includes("@")) errors.email = "Invalid email format";
+    if (form.password.length < 6) errors.password = "Password too short (min 6)";
+    if (form.password !== form.confirmPassword) errors.confirmPassword = "Passwords do not match";
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const r = await registerUser({ username: form.username, email: form.email, password: form.password });
       login(r.user, r.token);
       setForm(initialFormState);
     } catch (err) {
-      setAuthError(err instanceof Error ? err.message : "Something went wrong.");
+      const msg = err instanceof Error ? err.message : "Something went wrong.";
+      if (msg.toLowerCase().includes("username")) setFieldErrors({ username: msg });
+      else if (msg.toLowerCase().includes("email")) setFieldErrors({ email: msg });
+      else if (msg.toLowerCase().includes("password")) setFieldErrors({ password: msg });
+      else setAuthError(msg);
     } finally { setIsSubmitting(false); }
   };
 
@@ -522,7 +569,15 @@ export default function App() {
 
   // ── Settings save ──────────────────────────────────────────────────
   const handleSaveSettings = () => {
+    const { focusMinutes, shortBreakMinutes, longBreakMinutes } = draftSettings;
+    if (focusMinutes < 1 || focusMinutes > 120 || 
+        shortBreakMinutes < 1 || shortBreakMinutes > 60 || 
+        longBreakMinutes < 1 || longBreakMinutes > 120) {
+      toast.error("Durations must be within valid ranges (1-120 min focus/long, 1-60 min short)");
+      return;
+    }
     updateSettings(draftSettings);
+    toast.success("Settings applied! ✨");
   };
 
   const handleEnableNotifications = async () => {
@@ -564,17 +619,17 @@ export default function App() {
     if (authMode === "register") return (
       <div className="app-shell auth-shell">
         <RegisterPage form={form} error={authError} success={authSuccess}
-          isSubmitting={isSubmitting} onChange={handleChange}
-          onSubmit={handleRegisterSubmit} onClear={() => { setForm(initialFormState); setAuthError(""); }}
-          onSwitchToLogin={() => { setAuthMode("login"); setAuthError(""); }} />
+          isSubmitting={isSubmitting} fieldErrors={fieldErrors} onChange={handleChange}
+          onSubmit={handleRegisterSubmit} onClear={() => { setForm(initialFormState); setAuthError(""); setFieldErrors({}); }}
+          onSwitchToLogin={() => { setAuthMode("login"); setAuthError(""); setFieldErrors({}); }} />
       </div>
     );
     return (
       <div className="app-shell auth-shell">
         <LoginPage form={form} error={authError} success={authSuccess}
-          isSubmitting={isSubmitting} onChange={handleChange}
-          onSubmit={handleLoginSubmit} onClear={() => { setForm(initialFormState); setAuthError(""); }}
-          onSwitchToRegister={() => { setAuthMode("register"); setAuthError(""); }} />
+          isSubmitting={isSubmitting} fieldErrors={fieldErrors} onChange={handleChange}
+          onSubmit={handleLoginSubmit} onClear={() => { setForm(initialFormState); setAuthError(""); setFieldErrors({}); }}
+          onSwitchToRegister={() => { setAuthMode("register"); setAuthError(""); setFieldErrors({}); }} />
       </div>
     );
   }

@@ -9,7 +9,11 @@ export interface ITodo extends Document {
 
 const todoSchema = new mongoose.Schema<ITodo>({
   userId: { type: String, required: true },
-  text: { type: String, required: true },
+  text: { 
+    type: String, 
+    required: [true, "Task text is required"],
+    maxlength: [100, "Task text cannot exceed 100 characters"]
+  },
   completed: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
 });

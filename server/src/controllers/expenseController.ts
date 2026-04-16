@@ -28,7 +28,11 @@ export const createExpense = async (req: AuthRequest, res: Response) => {
 
     const saved = await newExpense.save();
     res.json(saved);
-  } catch (err) {
+  } catch (err: any) {
+    if (err.name === "ValidationError") {
+      const msg = Object.values(err.errors)[0] as any;
+      return res.status(400).json({ msg: msg.message });
+    }
     res.status(500).json({ msg: "Server error" });
   }
 };
