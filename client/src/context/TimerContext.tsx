@@ -6,7 +6,18 @@ export interface TimerSettings {
   focusMinutes: number;
   shortBreakMinutes: number;
   longBreakMinutes: number;
+  soundEnabled: boolean;
+  soundName: string;
+  soundVolume: number;
 }
+
+export const SOUND_OPTIONS = [
+  { id: "chime", label: "✨ Chime", url: "https://actions.google.com/sounds/v1/alarms/beep_short.ogg" },
+  { id: "bell", label: "🔔 Classic Bell", url: "https://actions.google.com/sounds/v1/alarms/mechanical_clock_ringing_short.ogg" },
+  { id: "digital", label: "📟 Digital", url: "https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg" },
+  { id: "success", label: "🎉 Achievement", url: "https://actions.google.com/sounds/v1/alarms/bugle_tune.ogg" },
+  { id: "zen", label: "🧘 Zen Bowl", url: "https://actions.google.com/sounds/v1/foley/metal_bowl_singing.ogg" },
+];
 
 interface TimerContextType {
   mode: TimerMode;
@@ -21,13 +32,31 @@ interface TimerContextType {
   startTimer: () => void;
   stopTimer: () => void;
   requestNotificationPermission: () => Promise<boolean>;
+  playTestSound: (name?: string, volume?: number) => void;
+  SOUND_OPTIONS: typeof SOUND_OPTIONS;
 }
 
 const DEFAULT_SETTINGS: TimerSettings = {
   focusMinutes: 25,
   shortBreakMinutes: 5,
   longBreakMinutes: 15,
+  soundEnabled: true,
+  soundName: "chime",
+  soundVolume: 0.5,
 };
+
+const STORAGE_KEY = "fs_timer_settings";
+
+function loadSettings(): TimerSettings {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return { ...DEFAULT_SETTINGS, ...parsed };
+    }
+  } catch (e) { console.error("Failed to load settings", e); }
+  return DEFAULT_SETTINGS;
+}
 
 // why use createContext here?
 // createContext is used to create a context
@@ -36,7 +65,7 @@ export const TimerContext = createContext<TimerContextType | undefined>(undefine
 
 export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [mode, setModeState] = useState<TimerMode>("focus");
-  const [settings, setSettings] = useState<TimerSettings>(DEFAULT_SETTINGS);
+  const [settings, setSettings] = useState<TimerSettings>(loadSettings);
   const [isRunning, setIsRunning] = useState(false);
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
   const [elapsedTotal, setElapsedTotal] = useState(0);
@@ -165,9 +194,20 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
 
   const playChime = () => {
-    const audio = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
-    audio.volume = 0.5;
-    audio.play().catch(() => {}); // Ignore errors if user hasn't interacted yet
+    if (!settings.soundEnabled) return;
+    const sound = SOUND_OPTIONS.find(s => s.id === settings.soundName) || SOUND_OPTIONS[0];
+    const audio = new Audio(sound.url);
+    audio.volume = settings.soundVolume;
+    audio.play().catch(() => {}); 
+  };
+
+  const playTestSound = (name?: string, volume?: number) => {
+    const soundName = name || settings.soundName;
+    const soundVol = volume !== undefined ? volume : settings.soundVolume;
+    const sound = SOUND_OPTIONS.find(s => s.id === soundName) || SOUND_OPTIONS[0];
+    const audio = new Audio(sound.url);
+    audio.volume = soundVol;
+    audio.play().catch(() => {});
   };
 
   const showNotification = () => {
@@ -188,19 +228,22 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const updateSettings = (partial: Partial<TimerSettings>) => {
     const next = { ...settings, ...partial };
     setSettings(next);
-    // Reset display to new duration for current mode
-    clearTick();
-    setIsRunning(false);
-    intervalStartRef.current = null;
-    elapsedAtStartRef.current = 0;
-    setDisplayMs(durationMs(mode, next));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    // Reset display to new duration for current mode if relevant duration changed
+    if (partial.focusMinutes !== undefined || partial.shortBreakMinutes !== undefined || partial.longBreakMinutes !== undefined) {
+      clearTick();
+      setIsRunning(false);
+      intervalStartRef.current = null;
+      elapsedAtStartRef.current = 0;
+      setDisplayMs(durationMs(mode, next));
+    }
   };
 
   return (
     <TimerContext.Provider value={{
       mode, settings, isRunning, displayMs, sessionStartTime, elapsedTotal,
       setMode, updateSettings, startTimer, stopTimer, resetTimer,
-      requestNotificationPermission
+      requestNotificationPermission, playTestSound, SOUND_OPTIONS
     }}>
       {children}
     </TimerContext.Provider>

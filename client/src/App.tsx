@@ -135,7 +135,8 @@ export default function App() {
   const { user, token, login, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { mode, settings, isRunning, displayMs, sessionStartTime,
-    setMode, updateSettings, startTimer, stopTimer, resetTimer, requestNotificationPermission } = useTimer();
+    setMode, updateSettings, startTimer, stopTimer, resetTimer, requestNotificationPermission, 
+    playTestSound, SOUND_OPTIONS } = useTimer();
 
   // --- Auth state ---
   const [authMode, setAuthMode] = useState<AuthMode>("login");
@@ -1264,6 +1265,61 @@ export default function App() {
             {currencySaved && (
               <div className="currency-saved-toast">✅ Currency saved!</div>
             )}
+          </div>
+
+          {/* Sound settings card */}
+          <div className="settings-card sound-card">
+            <p className="settings-sub-title">🔊 Sound Alerts</p>
+            <p className="settings-info">Choose your notification sound and volume.</p>
+
+            <div className="settings-fields">
+              <div className="settings-field toggle-field">
+                <label>Enable Sounds</label>
+                <button 
+                  className={`toggle-btn ${draftSettings.soundEnabled ? "active" : ""}`}
+                  onClick={() => setDraftSettings(s => ({ ...s, soundEnabled: !s.soundEnabled }))}
+                >
+                  <div className="toggle-thumb" />
+                </button>
+              </div>
+
+              <div className="settings-field">
+                <label>Alert Sound</label>
+                <select 
+                  className="sound-select"
+                  value={draftSettings.soundName}
+                  onChange={e => setDraftSettings(s => ({ ...s, soundName: e.target.value }))}
+                >
+                  {SOUND_OPTIONS.map(opt => (
+                    <option key={opt.id} value={opt.id}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="settings-field volume-field">
+                <label>Volume</label>
+                <div className="volume-row">
+                  <span className="volume-icon">🔈</span>
+                  <input 
+                    type="range" 
+                    min="0" 
+                    max="1" 
+                    step="0.1" 
+                    value={draftSettings.soundVolume}
+                    onChange={e => setDraftSettings(s => ({ ...s, soundVolume: Number(e.target.value) }))}
+                    className="volume-slider focus-slider"
+                  />
+                  <span className="volume-icon">🔊</span>
+                </div>
+              </div>
+            </div>
+
+            <button 
+              className="ghost-button test-sound-btn" 
+              onClick={() => playTestSound(draftSettings.soundName, draftSettings.soundVolume)}
+            >
+              🎵 Test Sound
+            </button>
           </div>
         </section>
       )}

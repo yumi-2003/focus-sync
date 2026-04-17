@@ -484,6 +484,98 @@
 
 .settings-save { margin-top: 4px; }
 
+.settings-sub-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-timer);
+  margin-bottom: -12px;
+}
+
+/* Sound Settings */
+.sound-card {
+  border-top: 2px solid var(--bg-footer);
+}
+
+.toggle-btn {
+  width: 48px;
+  height: 24px;
+  background: var(--bg-footer);
+  border-radius: 12px;
+  position: relative;
+  transition: background 0.3s;
+  padding: 0;
+  border: none;
+}
+
+.toggle-btn.active {
+  background: var(--mode-color);
+}
+
+.toggle-thumb {
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.3s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.toggle-btn.active .toggle-thumb {
+  transform: translateX(24px);
+}
+
+.sound-select {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 2px solid var(--bg-footer);
+  background: var(--bg-card);
+  color: var(--text-timer);
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+}
+
+.volume-row {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.volume-icon {
+  font-size: 1.2rem;
+  opacity: 0.7;
+}
+
+.volume-slider {
+  flex: 1;
+  height: 6px;
+  background: var(--bg-footer);
+  border-radius: 3px;
+  -webkit-appearance: none;
+  outline: none;
+}
+
+.volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  background: var(--text-header);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.test-sound-btn {
+  margin-top: 8px;
+  padding: 10px;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
 /* ─── Shared form / auth ──────────────────────────────────────── */
 .field {
   display: flex;
