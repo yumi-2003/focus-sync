@@ -8,7 +8,6 @@ interface RegisterPageProps {
     confirmPassword: string;
   };
   error: string;
-  success: string;
   isSubmitting: boolean;
   fieldErrors: {
     username?: string;
@@ -25,7 +24,6 @@ interface RegisterPageProps {
 function RegisterPage({
   form,
   error,
-  success,
   isSubmitting,
   fieldErrors,
   onChange,
@@ -143,7 +141,6 @@ function RegisterPage({
             </label>
 
             {error ? <div className="message error">{error}</div> : null}
-            {success ? <div className="message success">{success}</div> : null}
 
             <div className="button-row">
               <button className="primary-button" type="submit" disabled={isSubmitting}>

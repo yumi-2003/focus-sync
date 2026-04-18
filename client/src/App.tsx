@@ -95,6 +95,28 @@ const MODE_LABELS: Record<TimerMode, string> = {
   longBreak: "Long Break",
 };
 
+const JOURNAL_SUGGESTED_PROMPT =
+  "What felt meaningful today, what challenged me, and what is one gentle intention I want to carry into tomorrow?";
+
+const JOURNAL_QUOTES = [
+  {
+    text: "There is no greater agony than bearing an untold story inside you.",
+    author: "Maya Angelou",
+  },
+  {
+    text: "Fill your paper with the breathings of your heart.",
+    author: "William Wordsworth",
+  },
+  {
+    text: "Journal writing is a voyage to the interior.",
+    author: "Christina Baldwin",
+  },
+  {
+    text: "Write hard and clear about what hurts.",
+    author: "Ernest Hemingway",
+  },
+];
+
 // MODE_COLORS moved to CSS variables (--focus-color, --short-color, --long-color)
 
 // Completion images provided by user — map to each mode
@@ -142,7 +164,6 @@ export default function App() {
   const [authMode, setAuthMode] = useState<AuthMode>("login");
   const [form, setForm] = useState<FormState>(initialFormState);
   const [authError, setAuthError] = useState("");
-  const [authSuccess, setAuthSuccess] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
@@ -174,6 +195,7 @@ export default function App() {
   const [standaloneBgImageFile, setStandaloneBgImageFile] = useState<File | null>(null);
   const [standaloneBgPreviewUrl, setStandaloneBgPreviewUrl] = useState<string | null>(null);
   const [showStandaloneEmoji, setShowStandaloneEmoji] = useState(false);
+  const [journalQuoteIndex, setJournalQuoteIndex] = useState(() => new Date().getDate() % JOURNAL_QUOTES.length);
   const standaloneFileRef = useRef<HTMLInputElement>(null);
 
   // --- History ---
@@ -471,6 +493,18 @@ export default function App() {
     setShowStandaloneEmoji(false);
   };
 
+  const handleUseSuggestedPrompt = () => {
+    setStandaloneText(prev =>
+      prev.trim()
+        ? `${prev.trimEnd()}\n\n${JOURNAL_SUGGESTED_PROMPT}\n`
+        : `${JOURNAL_SUGGESTED_PROMPT}\n\n`
+    );
+  };
+
+  const handleNextJournalQuote = () => {
+    setJournalQuoteIndex(prev => (prev + 1) % JOURNAL_QUOTES.length);
+  };
+
   const handleStandaloneFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
     setStandaloneBgImageFile(file);
@@ -619,7 +653,7 @@ export default function App() {
   if (!user) {
     if (authMode === "register") return (
       <div className="app-shell auth-shell">
-        <RegisterPage form={form} error={authError} success={authSuccess}
+        <RegisterPage form={form} error={authError}
           isSubmitting={isSubmitting} fieldErrors={fieldErrors} onChange={handleChange}
           onSubmit={handleRegisterSubmit} onClear={() => { setForm(initialFormState); setAuthError(""); setFieldErrors({}); }}
           onSwitchToLogin={() => { setAuthMode("login"); setAuthError(""); setFieldErrors({}); }} />
@@ -627,7 +661,7 @@ export default function App() {
     );
     return (
       <div className="app-shell auth-shell">
-        <LoginPage form={form} error={authError} success={authSuccess}
+        <LoginPage form={form} error={authError}
           isSubmitting={isSubmitting} fieldErrors={fieldErrors} onChange={handleChange}
           onSubmit={handleLoginSubmit} onClear={() => { setForm(initialFormState); setAuthError(""); setFieldErrors({}); }}
           onSwitchToRegister={() => { setAuthMode("register"); setAuthError(""); setFieldErrors({}); }} />
@@ -891,6 +925,35 @@ export default function App() {
           <h2 className="section-title">✍️ Daily Journal</h2>
           <div className="journal-card">
             <p className="journal-sub">How are you feeling today? Write your heart out.</p>
+
+            <div className="journal-prompt-card">
+              <div>
+                <p className="journal-prompt-label">Suggested Prompt</p>
+                <p className="journal-prompt-text">{JOURNAL_SUGGESTED_PROMPT}</p>
+              </div>
+              <button
+                className="ghost-button journal-prompt-btn"
+                type="button"
+                onClick={handleUseSuggestedPrompt}
+              >
+                Use Prompt
+              </button>
+            </div>
+
+            <div className="journal-quote-card">
+              <div>
+                <p className="journal-prompt-label">Reflection Quote</p>
+                <p className="journal-quote-text">"{JOURNAL_QUOTES[journalQuoteIndex].text}"</p>
+                <p className="journal-quote-author">- {JOURNAL_QUOTES[journalQuoteIndex].author}</p>
+              </div>
+              <button
+                className="ghost-button journal-prompt-btn"
+                type="button"
+                onClick={handleNextJournalQuote}
+              >
+                Another Quote
+              </button>
+            </div>
 
             <div className="field">
               <span>Current Mood</span>

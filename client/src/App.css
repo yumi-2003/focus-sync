@@ -312,6 +312,7 @@
 /* Focus slider */
 .focus-slider {
   -webkit-appearance: none;
+  -moz-appearance: none;
   appearance: none;
   width: 100%;
   height: 6px;
@@ -322,6 +323,7 @@
 
 .focus-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
+  -moz-appearance: none;
   appearance: none;
   width: 20px;
   height: 20px;
@@ -557,11 +559,15 @@
   background: var(--bg-footer);
   border-radius: 3px;
   -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
   outline: none;
 }
 
 .volume-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
   width: 18px;
   height: 18px;
   background: var(--text-header);
@@ -1174,6 +1180,63 @@
   margin-bottom: 5px;
 }
 
+.journal-prompt-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: var(--bg-overlay);
+  border: 1px solid var(--bg-footer);
+}
+
+.journal-quote-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 18px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, var(--bg-overlay), var(--bg-card));
+  border: 1px solid var(--bg-footer);
+}
+
+.journal-prompt-label {
+  margin: 0 0 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-header);
+}
+
+.journal-prompt-text {
+  margin: 0;
+  color: var(--text-timer);
+  line-height: 1.6;
+}
+
+.journal-prompt-btn {
+  width: auto;
+  flex-shrink: 0;
+  padding: 10px 14px;
+}
+
+.journal-quote-text {
+  margin: 0;
+  color: var(--text-timer);
+  line-height: 1.7;
+  font-size: 1.02rem;
+  font-style: italic;
+}
+
+.journal-quote-author {
+  margin: 10px 0 0;
+  color: var(--text-footer);
+  font-size: 0.92rem;
+}
+
 .standalone-textarea {
   font-family: inherit;
   font-size: 1.1rem;
@@ -1195,6 +1258,17 @@
   margin-top: 10px;
   font-size: 1.1rem;
   padding: 16px;
+}
+
+@media (max-width: 640px) {
+  .journal-prompt-card,
+  .journal-quote-card {
+    flex-direction: column;
+  }
+
+  .journal-prompt-btn {
+    align-self: flex-start;
+  }
 }
 
 /* ─── Tasks View ──────────────────────────────────────────────── */
@@ -1594,9 +1668,6 @@
   margin: 0 0 -8px;
 }
 
-.currency-card {
-  /* inherits .settings-card */
-}
 
 .currency-grid {
   display: grid;

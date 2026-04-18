@@ -6,7 +6,6 @@ interface LoginPageProps {
     password: string;
   };
   error: string;
-  success: string;
   isSubmitting: boolean;
   fieldErrors: {
     email?: string;
@@ -21,7 +20,6 @@ interface LoginPageProps {
 function LoginPage({
   form,
   error,
-  success,
   isSubmitting,
   fieldErrors,
   onChange,
@@ -96,7 +94,6 @@ function LoginPage({
             </label>
 
             {error ? <div className="message error">{error}</div> : null}
-            {success ? <div className="message success">{success}</div> : null}
 
             <div className="button-row">
               <button className="primary-button" type="submit" disabled={isSubmitting}>
